@@ -1,2 +1,2 @@
-# SPG_Project
-Project for the Universitya Course "Shader Programming"
+# SPG Project
+Project for the University Course "Shader Programming"
