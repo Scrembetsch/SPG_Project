@@ -13,7 +13,7 @@ int main(int argc, char** argv)
         mLoadFile = argv[1];
     }
     SetupMembers();
-    
+
     RecreateWindow();
 
     while (!glfwWindowShouldClose(mWindow))
@@ -52,7 +52,7 @@ int SetupOpenGL()
 #endif
 
     // GLFW Window create
-    mWindow = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "EZG_ALGO", NULL, NULL);
+    mWindow = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "SPG", NULL, NULL);
     if (mWindow == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -69,7 +69,7 @@ int SetupOpenGL()
     // Capture mouse
     glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    // GLAD: Load all OpenGL Funtion pointers
+    // GLAD: Load all OpenGL Function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
@@ -117,7 +117,7 @@ void SetupObjects()
     model = glm::translate(model, glm::vec3(3.0f, 0.25001f, 5.0));
     model = glm::scale(model, glm::vec3(0.75));
     mCubes[mCubes.size() - 1]->SetModelMatrix(model);
-    
+
     mCubes.push_back(new Cube());
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(3.0f, 1.5002f, 5.0));
@@ -305,7 +305,7 @@ void RenderLoop()
     // Render Scene with shadows from the depth map
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+
     mSharedDefaultShader->use();
     glm::mat4 projection = glm::perspective(glm::radians(mCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     glm::mat4 view = mCamera.GetViewMatrix();
@@ -325,7 +325,7 @@ void RenderLoop()
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, mDepthMap);
     RenderScene(false);
-    
+
     std::string text    =  "Normal strength:\t" + std::to_string(mNormalStrength) + "\n";
     text                += "Anti-Aliasing:\t\t";
     text                += mMultiSampleEnabled ? "ON\n" : "OFF\n";
@@ -356,7 +356,7 @@ void RenderLoop()
 }
 
 void RenderScene(bool depthPass)
-{   
+{
     Material* currentMat = &mDepthMat;
     // Floor
     if (!depthPass)
@@ -401,7 +401,7 @@ void RecreateWindow()
 {
     OnExit();
     glfwTerminate();
-    
+
     SetupOpenGL();
 
     SetupArraysAndBuffers();
@@ -450,11 +450,11 @@ void ProcessInput(GLFWwindow* window)
     if (mKeyHandler.IsKeyDown(GLFW_KEY_W))
     {
         mCamera.ProcessKeyboard(Camera::Camera_Movement::FORWARD, delta);
-    }   
+    }
     if (mKeyHandler.IsKeyDown(GLFW_KEY_S))
     {
         mCamera.ProcessKeyboard(Camera::Camera_Movement::BACKWARD, delta);
-    } 
+    }
     if (mKeyHandler.IsKeyDown(GLFW_KEY_A))
     {
         mCamera.ProcessKeyboard(Camera::Camera_Movement::LEFT, delta);
@@ -473,7 +473,7 @@ void ProcessInput(GLFWwindow* window)
     {
         mCamera.MovementSpeed -= delta * 5;
     }
-    
+
     // Handle normal strength
     if (mKeyHandler.IsKeyDown(GLFW_KEY_UP))
     {
@@ -613,7 +613,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 // GLFW Callback when window changes
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
-    // make sure the viewport matches the new window dimensions; note that width and 
+    // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }

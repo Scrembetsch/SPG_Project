@@ -4,13 +4,13 @@ This project is for my university course "Shader Programming"
 
 ## How to start
 
-Open **ezg_algo.exe** in root directory of project
+Open **spg.exe** in root directory of project
 
 > The builded .exe in Release/Debug folder won't find the needed resoures
 
-If a .obj file from the data/model folder should be loaded start the program with:
+If a .obj file from the data/model folder should be loaded start the program with (model loader doesn't work correctly):
 ```sh
-ezg_algo.exe <filename>
+spg.exe <filename>
 ```
 
 > The model will be loaded 10 times, as it is intended as a stress test for the kd-tree
