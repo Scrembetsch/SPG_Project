@@ -81,32 +81,10 @@
     <ClInclude Include="src\Util\DollyController.h">
       <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="src\Primitives\Cube.h">
-      <Filter>Primitives</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Primitives\Node.h">
-      <Filter>Primitives</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Primitives\BoundingBox.h">
-      <Filter>Primitives</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Util\Ray.h">
-      <Filter>Util</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Util\KdTree.h">
-      <Filter>Util</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Util\KdNode.h">
-      <Filter>Util</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Util\KdVertex.h">
-      <Filter>Util</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Primitives\Triangle.h">
-      <Filter>Primitives</Filter>
-    </ClInclude>
     <ClInclude Include="src\Util\Timing.h">
       <Filter>Util</Filter>
     </ClInclude>
+    <ClInclude Include="src\glBasics\texture_2d.h" />
+    <ClInclude Include="src\glBasics\texture_3d.h" />
   </ItemGroup>
 </Project>

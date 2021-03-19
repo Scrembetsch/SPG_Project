@@ -11,12 +11,9 @@
 #include "glBasics/camera.h"
 #include "glBasics/material.h"
 #include "glBasics/text_renderer.h"
-#include "Primitives/Node.h"
-#include "Primitives/Cube.h"
 
 #include "Device/KeyHandler.h"
 #include "Util/DollyController.h"
-#include "Util/KdTree.h"
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -27,24 +24,30 @@ void ProcessInput(GLFWwindow* window);
 
 void SetupMembers();
 int SetupOpenGL();
-void SetupObjects();
 void SetupMaterials();
 void SetupArraysAndBuffers();
 bool SetupTextRenderer();
 void RenderLoop();
-void RenderScene(bool depthPass = false);
+void HandleEndFrameLogic();
+void HandlePreFrameLogic();
+void HandleInput();
+void RenderDefaultPass();
+void DrawText();
+void RenderScene();
 void OnExit();
-void RecreateWindow();
+void RecreateWindow(bool firstCall = false);
+
+void DrawErrors();
 
 void EnableMultiSample(bool enabled);
 void SetMutlisampleMode(unsigned int mode);
 
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
-const unsigned int SHADOW_WIDTH = 2048;
-const unsigned int SHADOW_HEIGHT = 2048;
-const float LIGHT_NEAR_PLANE = 0.5f;
-const float LIGHT_FAR_PLANE = 15.0f;
+
+const unsigned int ROCK_WIDTH = 96;
+const unsigned int ROCK_HEIGHT = 96;
+const unsigned int ROCK_DEPTH = 96;
 
 Camera mCamera;
 double mLastX = SCR_WIDTH / 2.0;
@@ -59,40 +62,33 @@ int mShowFPS;
 int mFrameCount;
 double mFrameTime;
 
-unsigned int mPlaneVAO = 0;
-unsigned int mPlaneVBO = 0;
-
-unsigned int mDepthMapFbo = 0;
-unsigned int mDepthMap = 0;
-
 unsigned int mMultiSample = GL_FASTEST;
 bool mMultiSampleEnabled = false;
 
 GLFWwindow* mWindow;
 
-std::vector<Node*> mCubes;
-
-Shader* mSharedDefaultShader;
-Texture* mSnowDiffuseTex;
-Texture* mSnowNormalTex;
-Material mMossMat;
-Material mDepthMat;
-Material mBoundingBoxMat;
-
 TextRenderer mTextRenderer;
 KeyHandler mKeyHandler;
 DollyController mDollyController;
-KdTree mKdTree;
-Ray mCurrentRay;
-double mNormalStrength;
+
+Material mGenerateRock;
+Material mRock;
 
 bool mEditMode = true;
-bool mDrawBoundingBoxes = false;
-bool mDrawAlbedo = true;
-glm::vec3 mLightPos;
 
-Cube* mHitCube;
+unsigned int mFbo;
+unsigned int mFboTex;
 
-std::string mLoadFile;
+unsigned int mRockVao;
+unsigned int mRockVbo;
 
-Triangle* mTest;
+unsigned int mEmptyVao;
+
+float mVerticesRock[] = {
+        1.0f,  1.0f,  // top right
+        1.0f, -1.0f,  // bottom right
+        -1.0f,  1.0f,   // top left
+        -1.0f, -1.0f,  // bottom left
+        1.0f, -1.0f,  // bottom right
+        -1.0f,  1.0f   // top left
+};

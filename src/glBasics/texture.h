@@ -3,7 +3,8 @@
 
 #include <glad/glad.h>
 
-class Texture{
+class Texture
+{
 public:
     Texture(unsigned int tex = 0, unsigned int texLocation = GL_TEXTURE0)
         : mTex(tex)
@@ -16,11 +17,7 @@ public:
     {
     }
 
-    inline void use()
-    {
-        glActiveTexture(mTexLocation);
-        glBindTexture(GL_TEXTURE_2D, mTex);
-    }
+    virtual void use() = 0;
 
     unsigned int mTex;
     unsigned int mTexLocation;
