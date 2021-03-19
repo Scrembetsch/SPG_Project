@@ -75,7 +75,7 @@ Material mGenerateRock;
 Material mRock;
 Material lightShader;
 bool mEditMode = true;
-
+bool mWireframe = false;
 unsigned int mFbo;
 unsigned int mFboTex;
 
@@ -84,5 +84,7 @@ unsigned int mRockVbo;
 
 unsigned int mEmptyVao;
 unsigned int mEmptyVbo;
+
+float mHeight;
 
 float mVerticesRock[6][2] = {{-1.0f, -1.0f}, {-1.0, 1.0}, {1.0, -1.0}, {1.0f, 1.0f}, {-1.0, 1.0}, {1.0, -1.0}};

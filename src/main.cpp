@@ -33,6 +33,7 @@ void SetupMembers()
     mShowFPS = 0;
     mFrameCount = 0;
     mFrameTime = 0;
+    mHeight = 0;
 }
 
 int SetupOpenGL()
@@ -42,7 +43,7 @@ int SetupOpenGL()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, mMultiSample);
+    //glfwWindowHint(GLFW_SAMPLES, mMultiSample);
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -77,7 +78,7 @@ int SetupOpenGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glEnable(GL_MULTISAMPLE);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     return 0;
 }
 
@@ -96,8 +97,8 @@ void SetupMaterials()
     mGenerateRock.GetShader()->load("shader/rock.vs", "shader/rock.fs");
 
     mRock.UseShader(new Shader());
-    mRock.GetShader()->load("shader/renderRock.vs", "shader/renderRock.fs"/*, "shader/renderRock.gs"*/);
-    mRock.mTextures.push_back(new Texture3D(mFboTex, GL_TEXTURE0));
+    mRock.GetShader()->load("shader/renderRock.vs", "shader/renderRock.fs", "shader/renderRock.gs");
+    //mRock.mTextures.push_back(new Texture3D(mFboTex, GL_TEXTURE0));
 }
 
 bool SetupTextRenderer()
@@ -222,11 +223,10 @@ void DrawText()
 void RenderScene()
 {
     glViewport(0, 0, ROCK_WIDTH, ROCK_HEIGHT);
-
     mGenerateRock.use();
     glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
     glClear(GL_COLOR_BUFFER_BIT);
-    mGenerateRock.GetShader()->setFloat("uHeight", mCamera.Position.y);
+    mGenerateRock.GetShader()->setFloat("uHeight", mHeight);
     for (int i = 0; i < ROCK_DEPTH; i++)
     {
         float layer = float(i) / float(ROCK_DEPTH - 1.0f);
@@ -249,11 +249,16 @@ void RenderScene()
     mRock.GetShader()->setMat4("uProjection", projection);
     mRock.GetShader()->setMat4("uView", view);
     mRock.GetShader()->setFloat("uStep", float(1) / float(ROCK_WIDTH - 1));
+    if (mWireframe)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_3D, mFboTex);
-    glPointSize(5.0f);
+    glPointSize(1.0f);
     glBindVertexArray(mEmptyVao);
     glDrawArrays(GL_POINTS, 0, ROCK_WIDTH * ROCK_HEIGHT * ROCK_DEPTH);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void RecreateWindow(bool firstCall)
@@ -311,11 +316,14 @@ void ProcessInput(GLFWwindow* window)
     }
     if (mKeyHandler.IsKeyDown(GLFW_KEY_SPACE))
     {
-        mCamera.ProcessKeyboard(Camera::Camera_Movement::UP, delta);
+        mHeight += delta;
+        //mCamera.ProcessKeyboard(Camera::Camera_Movement::UP, delta);
     }
     if (mKeyHandler.IsKeyDown(GLFW_KEY_LEFT_CONTROL))
     {
-        mCamera.ProcessKeyboard(Camera::Camera_Movement::DOWN, delta);
+        mHeight -= delta;
+
+        //mCamera.ProcessKeyboard(Camera::Camera_Movement::DOWN, delta);
     }
 
     if (mKeyHandler.IsKeyDown(GLFW_KEY_KP_ADD))
@@ -340,6 +348,19 @@ void ProcessInput(GLFWwindow* window)
     if (mKeyHandler.WasKeyReleased(GLFW_KEY_2))
     {
         SetMutlisampleMode(GL_NICEST);
+    }
+
+    if (mKeyHandler.WasKeyReleased(GLFW_KEY_H))
+    {
+        mWireframe = !mWireframe;
+        if (mWireframe)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        else
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
     }
 
     // Dolly Controller

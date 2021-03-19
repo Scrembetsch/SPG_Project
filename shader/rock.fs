@@ -9,4 +9,5 @@ void main(void) {
     float cosY = cos(vPosition.y * 5.8905);
     float cosZ = cos(vPosition.z * 5.8905);
     oColor = (sinX * sinX + cosY * cosY + cosZ * cosZ) * (1.0f / 3.0f);
+    // oColor = vec4(Color, Color, Color, 1.0f);
 }
