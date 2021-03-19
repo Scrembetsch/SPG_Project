@@ -463,6 +463,14 @@ void ProcessInput(GLFWwindow* window)
     {
         mCamera.ProcessKeyboard(Camera::Camera_Movement::RIGHT, delta);
     }
+    if (mKeyHandler.IsKeyDown(GLFW_KEY_SPACE))
+    {
+        mCamera.ProcessKeyboard(Camera::Camera_Movement::UP, delta);
+    }
+    if (mKeyHandler.IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+    {
+        mCamera.ProcessKeyboard(Camera::Camera_Movement::DOWN, delta);
+    }
 
     if (mKeyHandler.IsKeyDown(GLFW_KEY_KP_ADD))
     {

@@ -37,14 +37,16 @@ Open Solution and adjust **Additional Include & Linker Directories**
 ## Controls
 
 ### General
-|  Key  | Function      |
-| :---: | ------------- |
-|  ESC  | Close Window  |
-|   W   | Move forward  |
-|   A   | Move left     |
-|   S   | Move backward |
-|   D   | Move right    |
-| MOUSE | Look around   |
+|    Key    | Function      |
+| :-------: | ------------- |
+|    ESC    | Close Window  |
+|     W     | Move forward  |
+|     A     | Move left     |
+|     S     | Move backward |
+|     D     | Move right    |
+|   SPACE   | Move up       |
+| LEFT_CTRL | Move down     |
+|   MOUSE   | Look around   |
 
 ### Dolly Camera
 |    Key    | Function                                      |
