@@ -42,7 +42,7 @@ int SetupOpenGL()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwWindowHint(GLFW_SAMPLES, mMultiSample);
+    glfwWindowHint(GLFW_SAMPLES, mMultiSample);
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -75,9 +75,9 @@ int SetupOpenGL()
 
     // Set global OpenGL state
     glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_BLEND);
-    //glEnable(GL_MULTISAMPLE);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glEnable(GL_MULTISAMPLE);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     return 0;
 }
 
@@ -110,7 +110,7 @@ bool SetupTextRenderer()
 
 void SetupArraysAndBuffers()
 {
-     //Framebuffer & 3D texture
+    // Framebuffer & 3D texture
     glGenTextures(1, &mFboTex);
     glBindTexture(GL_TEXTURE_3D, mFboTex);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -128,17 +128,17 @@ void SetupArraysAndBuffers()
     glDrawBuffers(1, &c);
 
     // VAO & VBO
-    glGenVertexArrays(1, &mRockVao);
-    glGenBuffers(1, &mRockVbo);
     glGenVertexArrays(1, &mEmptyVao);
 
+    glGenVertexArrays(1, &mRockVao);
+    glGenBuffers(1, &mRockVbo);
+
+    glBindVertexArray(mRockVao);
     glBindBuffer(GL_ARRAY_BUFFER, mRockVbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(mVerticesRock), mVerticesRock, GL_STATIC_DRAW);
 
-    glBindVertexArray(mRockVao);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
     glBindVertexArray(0);
 }
 
@@ -221,33 +221,39 @@ void DrawText()
 
 void RenderScene()
 {
-    //glViewport(0, 0, ROCK_WIDTH, ROCK_HEIGHT);
+    glViewport(0, 0, ROCK_WIDTH, ROCK_HEIGHT);
 
-    //mGenerateRock.use();
-    //glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
-    //glClear(GL_COLOR_BUFFER_BIT);
-    //mGenerateRock.GetShader()->setFloat("uHeight", mCamera.Position.y);
-    //for (int i = 0; i < ROCK_DEPTH; i++)
-    //{
-    //    mGenerateRock.GetShader()->setFloat("uLayer", float(i) / float(ROCK_DEPTH - 1.0f));
-    //    glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, mFboTex, 0, i);
-    //    glBindVertexArray(mRockVao);
-    //    glDrawArrays(GL_TRIANGLES, 0, 6);
-    //}
+    mGenerateRock.use();
+    glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
+    glClear(GL_COLOR_BUFFER_BIT);
+    mGenerateRock.GetShader()->setFloat("uHeight", mCamera.Position.y);
+    for (int i = 0; i < ROCK_DEPTH; i++)
+    {
+        float layer = float(i) / float(ROCK_DEPTH - 1.0f);
+        mGenerateRock.GetShader()->setFloat("uLayer", layer);
+        glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
+        glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, mFboTex, 0, i);
+        glBindVertexArray(mRockVao);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
 
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-    mRock.use();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
+
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    mRock.use();
     glm::mat4 projection = glm::perspective(glm::radians(mCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     glm::mat4 view = mCamera.GetViewMatrix();
     mRock.GetShader()->setMat4("uProjection", projection);
     mRock.GetShader()->setMat4("uView", view);
-    //mRock.GetShader()->setFloat("uStep", float(1) / float(ROCK_WIDTH - 1));
+    mRock.GetShader()->setFloat("uStep", float(1) / float(ROCK_WIDTH - 1));
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_3D, mFboTex);
     glPointSize(5.0f);
     glBindVertexArray(mEmptyVao);
     glDrawArrays(GL_POINTS, 0, ROCK_WIDTH * ROCK_HEIGHT * ROCK_DEPTH);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void RecreateWindow(bool firstCall)
@@ -272,7 +278,7 @@ void OnExit()
     glDeleteTextures(1, &mFboTex);
     glDeleteVertexArrays(1, &mRockVao);
     glDeleteBuffers(1, &mRockVbo);
-    glDeleteVertexArrays(1, &mEmptyVao);
+    glDeleteBuffers(1, &mEmptyVbo);
 }
 
 // Process input

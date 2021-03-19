@@ -1,10 +1,10 @@
 #version 430
 
-// layout (binding = 0) uniform sampler3D uTex;
-// uniform float uStep;
+layout (binding = 0) uniform sampler3D uTex;
+uniform float uStep;
 uniform mat4 uProjection;
 uniform mat4 uView;
-// out vec3 vTexPos;
+out vec3 vTexPos;
 // out int vIndex;
 
 void main(void) { 
@@ -15,7 +15,7 @@ void main(void) {
 
     vec3 xyz = vec3(x, y, z);
     gl_Position = uProjection * uView * vec4(xyz, 1.0);
-    // vTexPos = xyz * uStep;
+    vTexPos = xyz * uStep;
     
     // int b1 = int(texture(uTex, vTexPos).r < 0.5f);
     // int b2 = int(texture(uTex, vTexPos + vec3(uStep, 0.0, 0.0)).r < 0.5f);

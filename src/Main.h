@@ -45,9 +45,9 @@ void SetMutlisampleMode(unsigned int mode);
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 
-const unsigned int ROCK_WIDTH = 96;
-const unsigned int ROCK_HEIGHT = 96;
-const unsigned int ROCK_DEPTH = 96;
+const unsigned int ROCK_WIDTH = 64;
+const unsigned int ROCK_HEIGHT = 64;
+const unsigned int ROCK_DEPTH = 64;
 
 Camera mCamera;
 double mLastX = SCR_WIDTH / 2.0;
@@ -73,7 +73,7 @@ DollyController mDollyController;
 
 Material mGenerateRock;
 Material mRock;
-
+Material lightShader;
 bool mEditMode = true;
 
 unsigned int mFbo;
@@ -83,12 +83,6 @@ unsigned int mRockVao;
 unsigned int mRockVbo;
 
 unsigned int mEmptyVao;
+unsigned int mEmptyVbo;
 
-float mVerticesRock[] = {
-        1.0f,  1.0f,  // top right
-        1.0f, -1.0f,  // bottom right
-        -1.0f,  1.0f,   // top left
-        -1.0f, -1.0f,  // bottom left
-        1.0f, -1.0f,  // bottom right
-        -1.0f,  1.0f   // top left
-};
+float mVerticesRock[6][2] = {{-1.0f, -1.0f}, {-1.0, 1.0}, {1.0, -1.0}, {1.0f, 1.0f}, {-1.0, 1.0}, {1.0, -1.0}};
