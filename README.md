@@ -8,13 +8,6 @@ Open **spg.exe** in root directory of project
 
 > The builded .exe in Release/Debug folder won't find the needed resoures
 
-If a .obj file from the data/model folder should be loaded start the program with (model loader doesn't work correctly):
-```sh
-spg.exe <filename>
-```
-
-> The model will be loaded 10 times, as it is intended as a stress test for the kd-tree
-
 ## How to compile
 Open Solution and adjust **Additional Include & Linker Directories**
 > Default:
@@ -56,23 +49,3 @@ Open Solution and adjust **Additional Include & Linker Directories**
 |     E     | Toggle Editor / Cinema mode                   |
 | BACKSPACE | Delete all points in dolly list               |
 |   ENTER   | Add current position & rotation to dolly list |
-
-### Normal map
-|      Key      | Function                 |
-| :-----------: | ------------------------ |
-| Arrow &#8593; | Increase normal strength |
-| Arrow &#8595; | Decrease normal strength |
-
-### Anti-Aliasing
-|  Key  | Function               |
-| :---: | ---------------------- |
-|   M   | Toggle MSAA on/off     |
-|   1   | Set MSAA to GL_FASTEST |
-|   2   | Set MSAA to GL_NICEST  |
-
-### K-D Tree
-|  Key  | Function                               |
-| :---: | -------------------------------------- |
-|   B   | Toggle bounding boxes on/off (drawing) |
-|   V   | Toggle objects on/off (drawing)        |
-|   R   | Shoot raycast in center of screen      |
