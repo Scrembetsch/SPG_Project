@@ -28,7 +28,8 @@ int main(int argc, char** argv)
 
 void SetupMembers()
 {
-    mCamera.Position = glm::vec3(0, 0, 6);
+    mCamera.Position = glm::vec3(48.0f, 39.0f, -19.0f);
+    mCamera.UpdateRotation(glm::quat(0.891428f, -0.313256f, -0.20025f, 0.259088f));
     mShowFPS = 0;
     mFrameCount = 0;
     mFrameTime = 0;
@@ -246,7 +247,7 @@ void RenderScene()
     glm::mat4 projection = glm::perspective(glm::radians(mCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     glm::mat4 view = mCamera.GetViewMatrix();
     glm::mat4 modelMatrix = glm::mat4(1.0f);
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f, 0.1f, 0.1f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f, 0.2f, 0.2f));
     mRock.GetShader()->setMat4("uProjection", projection);
     mRock.GetShader()->setMat4("uView", view);
     mRock.GetShader()->setMat4("uModel", modelMatrix);
@@ -336,6 +337,12 @@ void ProcessInput(GLFWwindow* window)
     if (mKeyHandler.WasKeyReleased(GLFW_KEY_H))
     {
         mWireframe = !mWireframe;
+    }
+
+    if (mKeyHandler.WasKeyReleased(GLFW_KEY_J))
+    {
+        std::cout << mCamera.Position.x << ", " << mCamera.Position.y << ", " <<mCamera.Position.z << std::endl;
+        std::cout << mCamera.Rotation.w << ", " << mCamera.Rotation.x << ", " << mCamera.Rotation.y << ", " << mCamera.Rotation.z << std::endl;
     }
 
     // Dolly Controller

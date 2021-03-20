@@ -10,17 +10,14 @@ in vec3 vTexPos[];
 in int vIndex[];
 out vec3 vTexPosGeo;
 
-vec3 cVertexPositions[13] =
-{
+vec3 cVertexPositions[13] = {
     vec3(0.0, 0.0, 0.0), vec3(0.5, 1.0, 1.0), vec3(0.0, 0.5, 1.0), 
     vec3(0.0, 1.0, 0.5), vec3(1.0, 0.5, 1.0), vec3(1.0, 1.0, 0.5),
     vec3(0.5, 1.0, 0.0), vec3(1.0, 0.5, 0.0), vec3(0.0, 0.5, 0.0), 
     vec3(0.0, 0.0, 0.5), vec3(0.5, 0.0, 1.0), vec3(1.0, 0.0, 0.5),
-    vec3(0.5, 0.0, 0.0)
-};
+    vec3(0.5, 0.0, 0.0)};
 
-int cTable[3072] =
-{
+int cTable[3072] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  2,  3,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  4,  1,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  5,
     2,  5,  2,  4,  0,  0,  0,  0,  0,  0,  5,  6,  7,  0,  0,  0,  0,  0,  0,
@@ -185,14 +182,11 @@ int cTable[3072] =
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 };
 
-void main(void)
-{	
+void main(void) {	
     vec4 base = gl_in[0].gl_Position;
     int index = vIndex[0] * 12;
-    for(int i = 0; i < 12; i += 3)
-    {
-        for(int k = 0; k < 3; k++)
-        {
+    for(int i = 0; i < 12; i += 3) {
+        for(int k = 0; k < 3; k++) {
             gl_Position = uProjection * uView * uModel * (base + vec4(cVertexPositions[cTable[index + i + k]], 0.0));
             vTexPosGeo = vTexPos[0];
             EmitVertex();
