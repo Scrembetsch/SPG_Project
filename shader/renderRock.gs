@@ -5,7 +5,7 @@ layout (triangle_strip, max_vertices = 12) out;
 
 uniform mat4 uProjection;
 uniform mat4 uView;
-
+uniform mat4 uModel;
 in vec3 vTexPos[];
 in int vIndex[];
 out vec3 vTexPosGeo;
@@ -187,7 +187,7 @@ void main(void) {
     int index = vIndex[0] * 12;
     for(int i = 0; i < 12; i += 3) {
         for(int k = 0; k < 3; k++) {
-            gl_Position = uProjection * uView * (base + vec4(cVertexPositions[cTable[index + i + k]], 0.0));
+            gl_Position = uProjection * uView * uModel * (base + vec4(cVertexPositions[cTable[index + i + k]], 0.0));
             vTexPosGeo = vTexPos[0];
             EmitVertex();
         }

@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 #endif
 
     SetupMembers();
-    RecreateWindow(true);
+    CreateWindow();
 
     while (!glfwWindowShouldClose(mWindow))
     {
@@ -23,7 +23,6 @@ int main(int argc, char** argv)
     }
 
     OnExit();
-    glfwTerminate();
     return 0;
 }
 
@@ -76,9 +75,8 @@ int SetupOpenGL()
 
     // Set global OpenGL state
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
     glEnable(GL_MULTISAMPLE);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     return 0;
 }
 
@@ -98,7 +96,7 @@ void SetupMaterials()
 
     mRock.UseShader(new Shader());
     mRock.GetShader()->load("shader/renderRock.vs", "shader/renderRock.fs", "shader/renderRock.gs");
-    //mRock.mTextures.push_back(new Texture3D(mFboTex, GL_TEXTURE0));
+    mRock.mTextures.push_back(new Texture3D(mFboTex, GL_TEXTURE0));
 }
 
 bool SetupTextRenderer()
@@ -194,11 +192,9 @@ void RenderDefaultPass()
 
 void DrawText()
 {
+    glEnable(GL_BLEND);
+
     std::string text;
-    text += "Anti-Aliasing:\t\t";
-    text += mMultiSampleEnabled ? "ON\n" : "OFF\n";
-    text += "Mode:\t\t\t\t";
-    text += mMultiSample == GL_NICEST ? "NICEST\n" : "FASTEST\n";
     text += "Edit Mode:\t\t\t";
     text += mEditMode ? "ON\n" : "OFF\n";
     text += "Camera Speed:\t\t" + std::to_string(mCamera.MovementSpeed);
@@ -218,10 +214,14 @@ void DrawText()
 
     text = "+";
     mTextRenderer.RenderText(text, SCR_WIDTH / 2.0f, SCR_HEIGHT / 2.0f, 0.5f, glm::vec3(1.0f, 1.0f, 1.0f));
+
+    glDisable(GL_BLEND);
 }
 
 void RenderScene()
 {
+    // Reset polygon mode before drawing noise (otherwise result is not correct)
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glViewport(0, 0, ROCK_WIDTH, ROCK_HEIGHT);
     mGenerateRock.use();
     glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
@@ -231,7 +231,6 @@ void RenderScene()
     {
         float layer = float(i) / float(ROCK_DEPTH - 1.0f);
         mGenerateRock.GetShader()->setFloat("uLayer", layer);
-        glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
         glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, mFboTex, 0, i);
         glBindVertexArray(mRockVao);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -246,29 +245,25 @@ void RenderScene()
     mRock.use();
     glm::mat4 projection = glm::perspective(glm::radians(mCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     glm::mat4 view = mCamera.GetViewMatrix();
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f, 0.1f, 0.1f));
     mRock.GetShader()->setMat4("uProjection", projection);
     mRock.GetShader()->setMat4("uView", view);
-    mRock.GetShader()->setFloat("uStep", float(1) / float(ROCK_WIDTH - 1));
+    mRock.GetShader()->setMat4("uModel", modelMatrix);
+    mRock.GetShader()->setInt("uWidth", ROCK_WIDTH);
+    mRock.GetShader()->setInt("uHeight", ROCK_HEIGHT);
+    mRock.GetShader()->setInt("uDepth", ROCK_DEPTH);
     if (mWireframe)
     {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_3D, mFboTex);
-    glPointSize(1.0f);
+
     glBindVertexArray(mEmptyVao);
     glDrawArrays(GL_POINTS, 0, ROCK_WIDTH * ROCK_HEIGHT * ROCK_DEPTH);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void RecreateWindow(bool firstCall)
+void CreateWindow()
 {
-    if (!firstCall)
-    {
-        OnExit();
-        glfwTerminate();
-    }
-
     SetupOpenGL();
 
     SetupArraysAndBuffers();
@@ -284,6 +279,8 @@ void OnExit()
     glDeleteVertexArrays(1, &mRockVao);
     glDeleteBuffers(1, &mRockVbo);
     glDeleteBuffers(1, &mEmptyVbo);
+
+    glfwTerminate();
 }
 
 // Process input
@@ -336,31 +333,9 @@ void ProcessInput(GLFWwindow* window)
         mCamera.MovementSpeed -= delta * 5;
     }
 
-    // Handle MSAA
-    if (mKeyHandler.WasKeyReleased(GLFW_KEY_M))
-    {
-        EnableMultiSample(!mMultiSampleEnabled);
-    }
-    if (mKeyHandler.WasKeyReleased(GLFW_KEY_1))
-    {
-        SetMutlisampleMode(GL_FASTEST);
-    }
-    if (mKeyHandler.WasKeyReleased(GLFW_KEY_2))
-    {
-        SetMutlisampleMode(GL_NICEST);
-    }
-
     if (mKeyHandler.WasKeyReleased(GLFW_KEY_H))
     {
         mWireframe = !mWireframe;
-        if (mWireframe)
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        }
-        else
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
     }
 
     // Dolly Controller
@@ -392,29 +367,6 @@ void ProcessInput(GLFWwindow* window)
             mDollyController.mDirections.push_back(mCamera.Rotation);
         }
     }
-}
-
-void EnableMultiSample(bool enabled)
-{
-    mMultiSampleEnabled = enabled;
-    if (mMultiSampleEnabled)
-    {
-        glEnable(GL_MULTISAMPLE);
-    }
-    else
-    {
-        glDisable(GL_MULTISAMPLE);
-    }
-}
-
-void SetMutlisampleMode(unsigned int mode)
-{
-    if (mMultiSample == mode)
-    {
-        return;
-    }
-    mMultiSample = mode;
-    RecreateWindow();
 }
 
 void MouseClickCallback(GLFWwindow* window, int button, int action, int mods)

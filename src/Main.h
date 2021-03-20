@@ -35,19 +35,16 @@ void RenderDefaultPass();
 void DrawText();
 void RenderScene();
 void OnExit();
-void RecreateWindow(bool firstCall = false);
+void CreateWindow();
 
 void DrawErrors();
-
-void EnableMultiSample(bool enabled);
-void SetMutlisampleMode(unsigned int mode);
 
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 
-const unsigned int ROCK_WIDTH = 64;
-const unsigned int ROCK_HEIGHT = 64;
-const unsigned int ROCK_DEPTH = 64;
+const unsigned int ROCK_WIDTH = 96;
+const unsigned int ROCK_HEIGHT = 256;
+const unsigned int ROCK_DEPTH = 96;
 
 Camera mCamera;
 double mLastX = SCR_WIDTH / 2.0;
@@ -61,9 +58,6 @@ int mShowFPS;
 
 int mFrameCount;
 double mFrameTime;
-
-unsigned int mMultiSample = GL_FASTEST;
-bool mMultiSampleEnabled = false;
 
 GLFWwindow* mWindow;
 
