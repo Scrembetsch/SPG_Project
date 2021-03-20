@@ -8,7 +8,8 @@ uniform int uDepth;
 out vec3 vTexPos;
 out int vIndex;
 
-void main(void) { 
+void main(void)
+{
     int id = gl_VertexID;
     int x = id % uWidth;
     int y = (id / uWidth) % uHeight;
