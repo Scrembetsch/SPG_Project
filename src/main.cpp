@@ -43,7 +43,6 @@ int SetupOpenGL()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwWindowHint(GLFW_SAMPLES, mMultiSample);
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -194,11 +193,13 @@ void RenderDefaultPass()
 void DrawText()
 {
     glEnable(GL_BLEND);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     std::string text;
     text += "Edit Mode:\t\t\t";
     text += mEditMode ? "ON\n" : "OFF\n";
-    text += "Camera Speed:\t\t" + std::to_string(mCamera.MovementSpeed);
+    text += "Camera Speed:\t\t" + std::to_string(mCamera.MovementSpeed) + "\n";
+    text += "Current Height:\t\t" + std::to_string(mHeight) + "\n";
     mTextRenderer.RenderFormattedText(text, 5.0f, SCR_HEIGHT - 20.0f, 0.4f, glm::vec3(1.0f, 1.0f, 1.0f), 0.1f);
 
     if (mFrameTime >= 0.5)

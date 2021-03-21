@@ -29,7 +29,7 @@ vec2 RotatePosition(vec2 position, float angle)
 
 void main(void) {
     vec2 rotPos1 = RotatePosition(vPosition.xz, vPosition.y);
-    vec2 rotPos2 = RotatePosition(vPosition.xz, vPosition.y * 5);
+    vec2 rotPos2 = RotatePosition(vPosition.xz, -vPosition.y * 5);
 
     float f = 0.0f;
     // Create pillars

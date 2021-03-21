@@ -11,6 +11,6 @@ void main(void) {
     float f = texture(uTex, vTexPosGeo).r;
     // float f = texture(uTex, vTexPos).r;
     // f *= -1;
-    oColor = vec4(cos(vTexPosGeo) * f, 1.0);
+    oColor = vec4(abs(sin(vTexPosGeo * 5)) * f, 1.0);
     // oColor = vec4(f, f, f, 1.0f);
 }
