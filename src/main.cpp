@@ -29,7 +29,9 @@ int main(int argc, char** argv)
 void SetupMembers()
 {
     mCamera.Position = glm::vec3(24.913f, 0.894679f, -14.491f);
-    mCamera.UpdateRotation(glm::quat(0.883054f, -0.313308f, -0.141051f, 0.319624f));
+    mCamera.Yaw = 132.3f;
+    mCamera.Pitch = -1.4f;
+    mCamera.updateCameraVectors();
     mLightPos = glm::vec3(50.0f, 40.0f, -20.0f);
     mShowFPS = 0;
     mFrameCount = 0;
@@ -533,6 +535,7 @@ void ProcessInput(GLFWwindow* window)
     {
         std::cout << mCamera.Position.x << "f, " << mCamera.Position.y << "f, " <<mCamera.Position.z << "f" << std::endl;
         std::cout << mCamera.Rotation.w << "f, " << mCamera.Rotation.x << "f, " << mCamera.Rotation.y << "f, " << mCamera.Rotation.z << "f" << std::endl;
+        std::cout << "Yaw: " << mCamera.Yaw << ", Pitch: " << mCamera.Pitch << std::endl;
     }
 
     // Dolly Controller
