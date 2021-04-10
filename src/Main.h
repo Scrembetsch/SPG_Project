@@ -34,10 +34,13 @@ void HandleInput();
 void RenderDefaultPass();
 void DrawText();
 void RenderScene();
+void RenderGeneratedGeometry();
+void RenderParallaxObjects();
+void RenderQuad();
 void OnExit();
 void CreateWindow();
 
-void DrawErrors();
+void PrintErrors();
 
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
@@ -67,7 +70,8 @@ DollyController mDollyController;
 
 Material mGenerateRock;
 Material mRock;
-Material lightShader;
+Material mParallax;
+
 bool mEditMode = true;
 bool mWireframe = false;
 unsigned int mFbo;
@@ -79,6 +83,13 @@ unsigned int mRockVbo;
 unsigned int mEmptyVao;
 unsigned int mEmptyVbo;
 
+unsigned int mQuadVao;
+unsigned int mQuadVbo;
+
 float mHeight;
+float mHeightScale;
+int mSteps;
+int mRefinmentSteps;
 
 float mVerticesRock[6][2] = {{-1.0f, -1.0f}, {-1.0, 1.0}, {1.0, -1.0}, {1.0f, 1.0f}, {-1.0, 1.0}, {1.0, -1.0}};
+glm::vec3 mLightPos;

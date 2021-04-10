@@ -41,6 +41,18 @@ Open Solution and adjust **Additional Include & Linker Directories**
 | LEFT_CTRL | Move down     |
 |   MOUSE   | Look around   |
 
+### Parallax Mapping
+|  Key   | Function                  |
+| :----: | ------------------------- |
+|   1    | Decrease Parallax Scale   |
+|   2    | Increase Parallax Scale   |
+| &larr; | Decrease Steps            |
+| &rarr; | Increase Steps            |
+| &uarr; | Increase Refinement Steps |
+| &darr; | Decrease Refinement Steps |
+
+> Hold **L_SHIFT** while Increasing/Decreasing steps for faster changes
+
 ### Dolly Camera
 |    Key    | Function                                      |
 | :-------: | --------------------------------------------- |
