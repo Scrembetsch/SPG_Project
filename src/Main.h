@@ -15,6 +15,8 @@
 #include "Device/KeyHandler.h"
 #include "Util/DollyController.h"
 
+#include "Primitives/Plane.h"
+
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseCallback(GLFWwindow* window, double xpos, double ypos);
 void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
@@ -36,7 +38,6 @@ void DrawText();
 void RenderScene();
 void RenderGeneratedGeometry();
 void RenderParallaxObjects();
-void RenderQuad();
 void OnExit();
 void CreateWindow();
 
@@ -77,14 +78,13 @@ bool mWireframe = false;
 unsigned int mFbo;
 unsigned int mFboTex;
 
+Plane* mParallaxPlane;
+
 unsigned int mRockVao;
 unsigned int mRockVbo;
 
 unsigned int mEmptyVao;
 unsigned int mEmptyVbo;
-
-unsigned int mQuadVao;
-unsigned int mQuadVbo;
 
 float mHeight;
 float mHeightScale;

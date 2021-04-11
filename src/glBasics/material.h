@@ -9,7 +9,7 @@ class Material
 {
 public:
 	Material()
-		: mShader(0)
+		: mShader(nullptr)
 		, mTextures()
 		, mSharedShader(false)
 	{
@@ -31,7 +31,7 @@ public:
 		}
 	}
 
-	inline void use()
+	void use()
 	{
 		mShader->use();
 		for (auto tex : mTextures)
@@ -42,6 +42,10 @@ public:
 
 	void UseSharedShader(Shader* shader)
 	{
+		if (mShader != nullptr)
+		{
+			delete mShader;
+		}
 		mSharedShader = true;
 		mShader = shader;
 	}
