@@ -51,12 +51,6 @@
     <ClInclude Include="src\glBasics\shader.h">
       <Filter>glBasics</Filter>
     </ClInclude>
-    <ClInclude Include="src\glBasics\shader_m.h">
-      <Filter>glBasics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\glBasics\shader_s.h">
-      <Filter>glBasics</Filter>
-    </ClInclude>
     <ClInclude Include="src\glBasics\texture.h">
       <Filter>glBasics</Filter>
     </ClInclude>
@@ -86,5 +80,7 @@
     </ClInclude>
     <ClInclude Include="src\glBasics\texture_2d.h" />
     <ClInclude Include="src\glBasics\texture_3d.h" />
+    <ClInclude Include="src\Primitives\Mesh.h" />
+    <ClInclude Include="src\Primitives\Plane.h" />
   </ItemGroup>
 </Project>

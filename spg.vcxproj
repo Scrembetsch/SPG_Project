@@ -166,6 +166,8 @@
     <ClInclude Include="src\glBasics\texture_3d.h" />
     <ClInclude Include="src\glBasics\text_renderer.h" />
     <ClInclude Include="src\Main.h" />
+    <ClInclude Include="src\Primitives\Mesh.h" />
+    <ClInclude Include="src\Primitives\Plane.h" />
     <ClInclude Include="src\Util\DollyController.h" />
     <ClInclude Include="src\Util\stb_image.h" />
     <ClInclude Include="src\Util\Timing.h" />
