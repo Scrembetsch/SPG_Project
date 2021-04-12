@@ -42,7 +42,7 @@ public:
 
 	void UseSharedShader(Shader* shader)
 	{
-		if (mShader != nullptr)
+		if (mShader != nullptr && !mSharedShader)
 		{
 			delete mShader;
 		}

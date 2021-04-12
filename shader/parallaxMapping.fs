@@ -57,7 +57,9 @@ void main()
     
     texCoords = ParallaxMapping(fs_in.TexCoords,  viewDir);       
     if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
+    {
         discard;
+    }
 
     vec3 normal = texture(uNormalMap, texCoords).rgb;
     normal = normalize(normal * 2.0 - 1.0);   
