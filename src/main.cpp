@@ -3,8 +3,8 @@
 #include <iostream>
 #include <filesystem>
 
-#include "glBasics/texture_2d.h"
-#include "glBasics/texture_3d.h"
+#include "glBasics/Texture2D.h"
+#include "glBasics/Texture3D.h"
 
 #include "Util/Util.h"
 
@@ -40,6 +40,7 @@ void SetupMembers()
     mHeightScale = 0.25f;
     mSteps = 10.0f;
     mRefinmentSteps = 10.0f;
+    mLastFrameTime = 0;
     mFirstMouse = true;
 }
 
@@ -87,15 +88,6 @@ int SetupOpenGL()
     return 0;
 }
 
-void PrintErrors()
-{
-    GLenum err;
-    while ((err = glGetError()) != GL_NO_ERROR)
-    {
-        std::cerr << err << std::endl;
-    }
-}
-
 void SetupMaterials()
 {
     mGenerateRock.UseShader(new Shader());
@@ -113,6 +105,21 @@ void SetupMaterials()
     //mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Bricks_Diffuse.jpg").string().c_str()), GL_TEXTURE0));
     //mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Bricks_Normal.jpg").string().c_str()), GL_TEXTURE1));
     //mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Bricks_Depth.jpg").string().c_str()), GL_TEXTURE2));
+    
+    mParticleSystem.InitParticleSystem("shader/updateParticle.vs", "shader/updateParticle.gs", "shader/renderParticle.vs", "shader/renderParticle.gs", "shader/renderParticle.fs");
+    mParticleSystem.mTexture = Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Particle.jpg").string().c_str()), GL_TEXTURE0);
+
+    mParticleSystem.SetGeneratorProperties(
+        glm::vec3(-10.0f, 17.5f, 0.0f), // Where the particles are generated
+        glm::vec3(-5, 0, -5), // Minimal velocity
+        glm::vec3(5, 20, 5), // Maximal velocity
+        glm::vec3(0, -1, 0), // Gravity force applied to particles
+        glm::vec3(0.0f, 0.5f, 1.0f), // Color (light blue)
+        1.5f, // Minimum lifetime in seconds
+        15.0f, // Maximum lifetime in seconds
+        10.0f, // Rendered size
+        2.0f, // Spawn every 0.05 seconds
+        30); // And spawn 30 particles
 }
 
 bool SetupTextRenderer()
@@ -183,11 +190,17 @@ void HandleEndFrameLogic()
 
 void HandlePreFrameLogic()
 {
+    if (mLastFrameTime == 0)
+    {
+        mLastFrameTime = glfwGetTime();
+        mDeltaTime = 0.0f;
+        return;
+    }
     double currentFrame = glfwGetTime();
     mDeltaTime = currentFrame - mLastFrameTime;
     mLastFrameTime = currentFrame;
 
-    PrintErrors();
+    Util::PrintErrors();
 }
 
 void HandleInput()
@@ -245,6 +258,7 @@ void RenderScene()
 {
     RenderGeneratedGeometry();
     RenderParallaxObjects();
+    RenderParticleSystem();
 }
 
 void RenderGeneratedGeometry()
@@ -313,6 +327,14 @@ void RenderParallaxObjects()
     mParallax.GetShader()->setFloat("uSteps", float(mSteps));
     mParallax.GetShader()->setFloat("uRefinmentSteps", float(mRefinmentSteps));
     mParallaxPlane->Draw();
+}
+
+void RenderParticleSystem()
+{
+    glm::mat4 projection = glm::perspective(glm::radians(mCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    mParticleSystem.SetMatrices(projection, mCamera.Position, mCamera.Front, mCamera.Up);
+    mParticleSystem.UpdateParticles(mDeltaTime);
+    mParticleSystem.RenderParticles();
 }
 
 void CreateWindow()

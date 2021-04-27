@@ -149,23 +149,23 @@
   <ItemGroup>
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Particle\ParticleSystem.cpp" />
     <ClCompile Include="src\Util\DollyController.cpp" />
     <ClCompile Include="src\Util\Timing.cpp" />
     <ClCompile Include="src\Util\Util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Device\KeyHandler.h" />
-    <ClInclude Include="src\glBasics\camera.h" />
-    <ClInclude Include="src\glBasics\filesystem.h" />
-    <ClInclude Include="src\glBasics\material.h" />
-    <ClInclude Include="src\glBasics\mesh.h" />
-    <ClInclude Include="src\glBasics\model.h" />
-    <ClInclude Include="src\glBasics\shader.h" />
-    <ClInclude Include="src\glBasics\texture.h" />
-    <ClInclude Include="src\glBasics\texture_2d.h" />
-    <ClInclude Include="src\glBasics\texture_3d.h" />
-    <ClInclude Include="src\glBasics\text_renderer.h" />
+    <ClInclude Include="src\glBasics\Camera.h" />
+    <ClInclude Include="src\glBasics\Material.h" />
+    <ClInclude Include="src\glBasics\Shader.h" />
+    <ClInclude Include="src\glBasics\Texture.h" />
+    <ClInclude Include="src\glBasics\Texture2D.h" />
+    <ClInclude Include="src\glBasics\Texture3D.h" />
+    <ClInclude Include="src\glBasics\TextRenderer.h" />
     <ClInclude Include="src\Main.h" />
+    <ClInclude Include="src\Particle\Particle.h" />
+    <ClInclude Include="src\Particle\ParticleSystem.h" />
     <ClInclude Include="src\Primitives\Mesh.h" />
     <ClInclude Include="src\Primitives\Plane.h" />
     <ClInclude Include="src\Util\DollyController.h" />

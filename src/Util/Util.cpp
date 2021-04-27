@@ -45,3 +45,12 @@ unsigned int Util::LoadTexture(char const* path)
 
     return textureID;
 }
+
+void Util::PrintErrors()
+{
+    GLenum err;
+    while ((err = glGetError()) != GL_NO_ERROR)
+    {
+        std::cerr << err << std::endl;
+    }
+}

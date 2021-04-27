@@ -34,24 +34,18 @@
     <ClCompile Include="src\Util\Timing.cpp">
       <Filter>Util</Filter>
     </ClCompile>
+    <ClCompile Include="src\Particle\ParticleSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\glBasics\camera.h">
+    <ClInclude Include="src\glBasics\Camera.h">
       <Filter>glBasics</Filter>
     </ClInclude>
-    <ClInclude Include="src\glBasics\filesystem.h">
+    <ClInclude Include="src\glBasics\Shader.h">
       <Filter>glBasics</Filter>
     </ClInclude>
-    <ClInclude Include="src\glBasics\mesh.h">
-      <Filter>glBasics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\glBasics\model.h">
-      <Filter>glBasics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\glBasics\shader.h">
-      <Filter>glBasics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\glBasics\texture.h">
+    <ClInclude Include="src\glBasics\Texture.h">
       <Filter>glBasics</Filter>
     </ClInclude>
     <ClInclude Include="src\Main.h">
@@ -63,10 +57,10 @@
     <ClInclude Include="src\Util\Util.h">
       <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="src\glBasics\material.h">
+    <ClInclude Include="src\glBasics\Material.h">
       <Filter>glBasics</Filter>
     </ClInclude>
-    <ClInclude Include="src\glBasics\text_renderer.h">
+    <ClInclude Include="src\glBasics\TextRenderer.h">
       <Filter>glBasics</Filter>
     </ClInclude>
     <ClInclude Include="src\Device\KeyHandler.h">
@@ -78,9 +72,19 @@
     <ClInclude Include="src\Util\Timing.h">
       <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="src\glBasics\texture_2d.h" />
-    <ClInclude Include="src\glBasics\texture_3d.h" />
-    <ClInclude Include="src\Primitives\Mesh.h" />
-    <ClInclude Include="src\Primitives\Plane.h" />
+    <ClInclude Include="src\Primitives\Mesh.h">
+      <Filter>Primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Primitives\Plane.h">
+      <Filter>Primitives</Filter>
+    </ClInclude>
+    <ClInclude Include="src\glBasics\Texture2D.h">
+      <Filter>glBasics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\glBasics\Texture3D.h">
+      <Filter>glBasics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Particle\Particle.h" />
+    <ClInclude Include="src\Particle\ParticleSystem.h" />
   </ItemGroup>
 </Project>

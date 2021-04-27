@@ -2,8 +2,8 @@
 
 #include <glad/glad.h>
 #include <vector>
-#include "shader.h"
-#include "texture.h"
+#include "Shader.h"
+#include "Texture.h"
 
 class Material
 {

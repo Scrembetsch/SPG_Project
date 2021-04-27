@@ -8,14 +8,15 @@
 
 #include <string>
 
-#include "glBasics/camera.h"
-#include "glBasics/material.h"
-#include "glBasics/text_renderer.h"
+#include "glBasics/Camera.h"
+#include "glBasics/Material.h"
+#include "glBasics/TextRenderer.h"
 
 #include "Device/KeyHandler.h"
 #include "Util/DollyController.h"
 
 #include "Primitives/Plane.h"
+#include "Particle/ParticleSystem.h"
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -38,13 +39,12 @@ void DrawText();
 void RenderScene();
 void RenderGeneratedGeometry();
 void RenderParallaxObjects();
+void RenderParticleSystem();
 void OnExit();
 void CreateWindow();
 
-void PrintErrors();
-
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
 
 const unsigned int ROCK_WIDTH = 96;
 const unsigned int ROCK_HEIGHT = 256;
@@ -93,3 +93,5 @@ int mRefinmentSteps;
 
 float mVerticesRock[6][2] = {{-1.0f, -1.0f}, {-1.0, 1.0}, {1.0, -1.0}, {1.0f, 1.0f}, {-1.0, 1.0}, {1.0, -1.0}};
 glm::vec3 mLightPos;
+
+ParticleSystem mParticleSystem;

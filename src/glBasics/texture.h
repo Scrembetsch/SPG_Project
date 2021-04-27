@@ -15,6 +15,7 @@ public:
 
     ~Texture()
     {
+        glDeleteTextures(1, &mTex);
     }
 
     virtual void use() = 0;

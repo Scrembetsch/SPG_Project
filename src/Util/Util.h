@@ -2,9 +2,10 @@
 
 #include <string>
 
-#include "../glBasics/texture.h"
+#include "../glBasics/Texture.h"
 
 namespace Util
 {
 	unsigned int LoadTexture(char const* path);
+	void PrintErrors();
 }
