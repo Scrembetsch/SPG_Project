@@ -8,10 +8,10 @@ public:
 		: Mesh()
 	{
         // positions
-        glm::vec3 pos1(-1.0f, 1.0f, 0.0f);
-        glm::vec3 pos2(-1.0f, -1.0f, 0.0f);
-        glm::vec3 pos3(1.0f, -1.0f, 0.0f);
-        glm::vec3 pos4(1.0f, 1.0f, 0.0f);
+        mVertices[0] = glm::vec3(-1.0f, 1.0f, 0.0f);
+        mVertices[1] = glm::vec3(-1.0f, -1.0f, 0.0f);
+        mVertices[2] = glm::vec3(1.0f, -1.0f, 0.0f);
+        mVertices[3] = glm::vec3(1.0f, 1.0f, 0.0f);
         // texture coordinates
         glm::vec2 uv1(0.0f, 1.0f);
         glm::vec2 uv2(0.0f, 0.0f);
@@ -25,8 +25,8 @@ public:
         glm::vec3 tangent2, bitangent2;
         // triangle 1
         // ----------
-        glm::vec3 edge1 = pos2 - pos1;
-        glm::vec3 edge2 = pos3 - pos1;
+        glm::vec3 edge1 = mVertices[1] - mVertices[0];
+        glm::vec3 edge2 = mVertices[2] - mVertices[0];
         glm::vec2 deltaUV1 = uv2 - uv1;
         glm::vec2 deltaUV2 = uv3 - uv1;
 
@@ -44,8 +44,8 @@ public:
 
         // triangle 2
         // ----------
-        edge1 = pos3 - pos1;
-        edge2 = pos4 - pos1;
+        edge1 = mVertices[2] - mVertices[0];
+        edge2 = mVertices[3] - mVertices[0];
         deltaUV1 = uv3 - uv1;
         deltaUV2 = uv4 - uv1;
 
@@ -64,14 +64,14 @@ public:
 
 
         float quadVertices[] = {
-            // positions            // normal         // texcoords  // tangent                          // bitangent
-            pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-            pos2.x, pos2.y, pos2.z, nm.x, nm.y, nm.z, uv2.x, uv2.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-            pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
+            // positions            // normal           // texcoords                      // tangent                          // bitangent
+            mVertices[0].x, mVertices[0].y, mVertices[0].z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
+            mVertices[1].x, mVertices[1].y, mVertices[1].z, nm.x, nm.y, nm.z, uv2.x, uv2.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
+            mVertices[2].x, mVertices[2].y, mVertices[2].z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
 
-            pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
-            pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
-            pos4.x, pos4.y, pos4.z, nm.x, nm.y, nm.z, uv4.x, uv4.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z
+            mVertices[0].x, mVertices[0].y, mVertices[0].z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
+            mVertices[2].x, mVertices[2].y, mVertices[2].z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
+            mVertices[3].x, mVertices[3].y, mVertices[3].z, nm.x, nm.y, nm.z, uv4.x, uv4.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z
         };
         // configure plane VAO
         glGenVertexArrays(1, &mVao);
@@ -101,4 +101,28 @@ public:
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
     }
+
+    bool Intersects(const Ray& ray, float& hitT)
+    {
+        glm::vec3 pos0 = mModelMatrix * glm::vec4(mVertices[0], 1.0);
+        glm::vec3 pos1 = mModelMatrix * glm::vec4(mVertices[1], 1.0);
+        glm::vec3 pos2 = mModelMatrix * glm::vec4(mVertices[2], 1.0);
+
+        glm::vec3 dir0 = pos1 - pos0;
+        glm::vec3 dir1 = pos2 - pos0;
+
+        glm::vec3 normal = glm::cross(dir0, dir1);
+        glm::vec3 center = pos0 + (dir0 / 2.0f) + (dir1 / 2.0f);
+
+        float denom = glm::dot(normal, ray.mDirection);
+        if (abs(denom) > ray.GetEpsilon())
+        {
+            float hitT = glm::dot((center - ray.mOrigin), (normal) / denom);
+            if (hitT >= ray.GetEpsilon()) return true;
+        }
+        return false;
+    }
+
+private:
+    glm::vec3 mVertices[4];
 };

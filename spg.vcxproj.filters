@@ -86,5 +86,6 @@
     </ClInclude>
     <ClInclude Include="src\Particle\Particle.h" />
     <ClInclude Include="src\Particle\ParticleSystem.h" />
+    <ClInclude Include="src\Util\Ray.h" />
   </ItemGroup>
 </Project>

@@ -169,6 +169,7 @@
     <ClInclude Include="src\Primitives\Mesh.h" />
     <ClInclude Include="src\Primitives\Plane.h" />
     <ClInclude Include="src\Util\DollyController.h" />
+    <ClInclude Include="src\Util\Ray.h" />
     <ClInclude Include="src\Util\stb_image.h" />
     <ClInclude Include="src\Util\Timing.h" />
     <ClInclude Include="src\Util\Util.h" />

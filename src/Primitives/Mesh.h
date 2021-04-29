@@ -5,6 +5,8 @@
 
 #include <glm/glm.hpp>
 
+#include "../Util/Ray.h"
+
 class Mesh
 {
 public:
@@ -31,6 +33,11 @@ public:
 
 	void Draw()
 	{
+	}
+
+	bool Intersects(const Ray& ray, float& hitT)
+	{
+		return true;
 	}
 
 	unsigned int mVao;

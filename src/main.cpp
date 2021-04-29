@@ -98,7 +98,8 @@ void SetupMaterials()
     mRock.mTextures.push_back(new Texture3D(mFboTex, GL_TEXTURE0));
 
     mParallax.UseShader(new Shader());
-    mParallax.GetShader()->load("shader/parallaxMapping.vs", "shader/parallaxMapping.fs");
+    mParallax.GetShader()->load("shader/parallaxMapping.vs", "shader/parallaxMapping.fs", nullptr, false);
+    mParallax.GetShader()->link();
     mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Roof_Diffuse.jpg").string().c_str()), GL_TEXTURE0));
     mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Roof_Normal.jpg").string().c_str()), GL_TEXTURE1));
     mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Roof_Depth.jpg").string().c_str()), GL_TEXTURE2));
@@ -107,18 +108,18 @@ void SetupMaterials()
     //mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Bricks_Depth.jpg").string().c_str()), GL_TEXTURE2));
     
     mParticleSystem.InitParticleSystem("shader/updateParticle.vs", "shader/updateParticle.gs", "shader/renderParticle.vs", "shader/renderParticle.gs", "shader/renderParticle.fs");
-    mParticleSystem.mTexture = Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Particle.jpg").string().c_str()), GL_TEXTURE0);
+    mParticleSystem.mTexture = new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/particle.png").string().c_str()), GL_TEXTURE0);
 
     mParticleSystem.SetGeneratorProperties(
-        glm::vec3(-10.0f, 17.5f, 0.0f), // Where the particles are generated
+        glm::vec3(-2.0f, 0.0f, 2.0f), // Where the particles are generated
         glm::vec3(-5, 0, -5), // Minimal velocity
-        glm::vec3(5, 20, 5), // Maximal velocity
+        glm::vec3(5, 5, 5), // Maximal velocity
         glm::vec3(0, -1, 0), // Gravity force applied to particles
-        glm::vec3(0.0f, 0.5f, 1.0f), // Color (light blue)
+        glm::vec3(1.0f, 1.0f, 1.0f), // Color
         1.5f, // Minimum lifetime in seconds
-        15.0f, // Maximum lifetime in seconds
-        10.0f, // Rendered size
-        2.0f, // Spawn every 0.05 seconds
+        2.0f, // Maximum lifetime in seconds
+        1.0f, // Rendered size
+        0.02f, // Spawn every 0.05 seconds
         30); // And spawn 30 particles
 }
 
@@ -164,6 +165,11 @@ void SetupArraysAndBuffers()
     glBindVertexArray(0);
 
     mParallaxPlane = new Plane();
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(135.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f, 3.0f, 3.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(-2.0f, 0.0f, 5.0f));
+    mParallaxPlane->mModelMatrix = modelMatrix;
 }
 
 void RenderLoop()
@@ -256,9 +262,15 @@ void DrawText()
 
 void RenderScene()
 {
-    RenderGeneratedGeometry();
+    //RenderGeneratedGeometry();
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     RenderParallaxObjects();
     RenderParticleSystem();
+    //mCurrentRay.Draw();
 }
 
 void RenderGeneratedGeometry()
@@ -314,13 +326,9 @@ void RenderParallaxObjects()
     mParallax.use();
     glm::mat4 projection = glm::perspective(glm::radians(mCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     glm::mat4 view = mCamera.GetViewMatrix();
-    glm::mat4 modelMatrix = glm::mat4(1.0f);
-    modelMatrix = glm::rotate(modelMatrix, glm::radians(135.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f, 3.0f, 3.0f));
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(-2.0f, 0.0f, 5.0f));
     mParallax.GetShader()->setMat4("uProjection", projection);
     mParallax.GetShader()->setMat4("uView", view);
-    mParallax.GetShader()->setMat4("uModel", modelMatrix);
+    mParallax.GetShader()->setMat4("uModel", mParallaxPlane->mModelMatrix);
     mParallax.GetShader()->setVec3("uViewPos", mCamera.Position);
     mParallax.GetShader()->setVec3("uLightPos", mLightPos);
     mParallax.GetShader()->setFloat("uHeightScale", mHeightScale);
@@ -332,7 +340,7 @@ void RenderParallaxObjects()
 void RenderParticleSystem()
 {
     glm::mat4 projection = glm::perspective(glm::radians(mCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    mParticleSystem.SetMatrices(projection, mCamera.Position, mCamera.Front, mCamera.Up);
+    mParticleSystem.SetMatrices(projection, mCamera.GetViewMatrix(), mCamera.Position, mCamera.Front, mCamera.Up);
     mParticleSystem.UpdateParticles(mDeltaTime);
     mParticleSystem.RenderParticles();
 }
@@ -466,6 +474,23 @@ void ProcessInput(GLFWwindow* window)
         std::cout << mCamera.Position.x << "f, " << mCamera.Position.y << "f, " <<mCamera.Position.z << "f" << std::endl;
         std::cout << mCamera.Rotation.w << "f, " << mCamera.Rotation.x << "f, " << mCamera.Rotation.y << "f, " << mCamera.Rotation.z << "f" << std::endl;
         std::cout << "Yaw: " << mCamera.Yaw << ", Pitch: " << mCamera.Pitch << std::endl;
+    }
+
+    if (mKeyHandler.WasKeyReleased(GLFW_KEY_R))
+    {
+        mCurrentRay = Ray(mCamera.Position, mCamera.Front);
+        mCurrentRay.UpdateLine();
+        float hit = 0;
+        if (mParallaxPlane->Intersects(mCurrentRay, hit))
+        {
+            glm::vec3 hitPos = mCurrentRay.mOrigin + mCurrentRay.mDirection * hit;
+            std::cout << "Hit: " << hit << std::endl;
+            std::cout << "HitPosition: " << hitPos.x << ", " << hitPos.y << ", " << hitPos.z << std::endl;
+        }
+        else
+        {
+            std::cout << "No Hit" << std::endl;
+        }
     }
 
     // Dolly Controller

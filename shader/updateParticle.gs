@@ -11,7 +11,7 @@ in vec3 vVelocityPass[];
 in vec3 vColorPass[];
 in float vLifeTimePass[];
 in float vSizePass[];
-in int vTypePass[];
+in float vTypePass[];
 
 // All that we send further
 out vec3 vPositionOut;
@@ -19,7 +19,7 @@ out vec3 vVelocityOut;
 out vec3 vColorOut;
 out float vLifeTimeOut;
 out float vSizeOut;
-out int vTypeOut;
+out float vTypeOut;
 
 uniform vec3 uPosition; // Position where new particles are spawned
 uniform vec3 uGravity; // Gravity vector for particles - updates velocity of particles 
@@ -65,7 +65,7 @@ void main()
   vLifeTimeOut = vLifeTimePass[0]-uTimeStep;
   vSizeOut = vSizePass[0];
   vTypeOut = vTypePass[0];
-    
+
   if(vTypeOut == 0)
   {
     EmitVertex();
@@ -74,9 +74,9 @@ void main()
     for(int i = 0; i < uNumToGenerate; i++)
     {
       vPositionOut = uPosition;
-      vVelocityOut = uVelocityMin+vec3(uVelocityRange.x*randZeroOne(), uVelocityRange.y*randZeroOne(), uVelocityRange.z*randZeroOne());
+      vVelocityOut = uVelocityMin + vec3(uVelocityRange.x * randZeroOne(), uVelocityRange.y * randZeroOne(), uVelocityRange.z * randZeroOne());
       vColorOut = uColor;
-      vLifeTimeOut = uLifeTimeMin+uLifeTimeRange*randZeroOne();
+      vLifeTimeOut = uLifeTimeMin + uLifeTimeRange * randZeroOne();
       vSizeOut = uSize;
       vTypeOut = 1;
       EmitVertex();

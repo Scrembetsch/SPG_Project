@@ -17,6 +17,7 @@
 
 #include "Primitives/Plane.h"
 #include "Particle/ParticleSystem.h"
+#include "Util/Ray.h"
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -95,3 +96,5 @@ float mVerticesRock[6][2] = {{-1.0f, -1.0f}, {-1.0, 1.0}, {1.0, -1.0}, {1.0f, 1.
 glm::vec3 mLightPos;
 
 ParticleSystem mParticleSystem;
+
+Ray mCurrentRay;

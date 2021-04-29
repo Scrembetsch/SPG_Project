@@ -20,7 +20,7 @@ public:
     }
 
     // Load Shader and compile
-    bool load(const char* vertexPath = nullptr, const char* fragmentPath = nullptr, const char* geometryPath = nullptr)
+    bool load(const char* vertexPath = nullptr, const char* fragmentPath = nullptr, const char* geometryPath = nullptr, bool link = true)
     {
         // 1. retrieve the vertex/fragment source code from filePath
         std::string vertexCode;
@@ -106,8 +106,11 @@ public:
         if (geometryPath != nullptr)
             glAttachShader(ID, geometry);
 
-        glLinkProgram(ID);
-        checkCompileErrors(ID, "PROGRAM");
+        if (link)
+        {
+            glLinkProgram(ID);
+            checkCompileErrors(ID, "PROGRAM");
+        }
         // delete the shaders as they're linked into our program now and no longer necessery
         if(vertexPath != nullptr)
             glDeleteShader(vertex);
@@ -118,6 +121,13 @@ public:
         if (geometryPath != nullptr)
             glDeleteShader(geometry);
 
+        return true;
+    }
+
+    bool link()
+    {
+        glLinkProgram(ID);
+        checkCompileErrors(ID, "PROGRAM");
         return true;
     }
     // activate the shader
