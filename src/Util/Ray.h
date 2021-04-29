@@ -19,22 +19,22 @@ public:
 		, mMinDistance(minDis)
 		, mMaxDistance(maxDis)
 		, mHitDistance(500)
-		, mVao(0)
-		, mVbo(0)
+		, mLineVao(0)
+		, mLineVbo(0)
 	{
 	}
 
 	~Ray()
 	{
-		if (mVao != 0)
+		if (mLineVao != 0)
 		{
-			glDeleteVertexArrays(1, &mVao);
-			mVao = 0;
+			glDeleteVertexArrays(1, &mLineVao);
+			mLineVao = 0;
 		}
-		if (mVbo != 0)
+		if (mLineVbo != 0)
 		{
-			glDeleteBuffers(1, &mVbo);
-			mVbo = 0;
+			glDeleteBuffers(1, &mLineVbo);
+			mLineVbo = 0;
 		}
 	}
 
@@ -51,15 +51,15 @@ public:
 
 	void UpdateLine()
 	{
-		if (mVao != 0)
+		if (mLineVao != 0)
 		{
-			glDeleteVertexArrays(1, &mVao);
-			mVao = 0;
+			glDeleteVertexArrays(1, &mLineVao);
+			mLineVao = 0;
 		}
-		if (mVbo != 0)
+		if (mLineVbo != 0)
 		{
-			glDeleteBuffers(1, &mVbo);
-			mVbo = 0;
+			glDeleteBuffers(1, &mLineVbo);
+			mLineVbo = 0;
 		}
 
 		mLine[0] = mOrigin.x;
@@ -71,13 +71,13 @@ public:
 		mLine[4] = t.y;
 		mLine[5] = t.z;
 
-		glGenVertexArrays(1, &mVao);
-		glGenBuffers(1, &mVbo);
+		glGenVertexArrays(1, &mLineVao);
+		glGenBuffers(1, &mLineVbo);
 		// Fill buffer
-		glBindBuffer(GL_ARRAY_BUFFER, mVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, mLineVbo);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, mLine, GL_STATIC_DRAW);
 		// Link vertex attributes for shader
-		glBindVertexArray(mVao);
+		glBindVertexArray(mLineVao);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -86,10 +86,10 @@ public:
 
 	void Draw()
 	{
-		if (mVao != 0)
+		if (mLineVao != 0)
 		{
 			//glLineWidth(5);
-			glBindVertexArray(mVao);
+			glBindVertexArray(mLineVao);
 			glDrawArrays(GL_LINES, 0, 2);
 			glBindVertexArray(0);
 		}
@@ -97,6 +97,6 @@ public:
 
 protected:
 	float mLine[6];
-	unsigned int mVao;
-	unsigned int mVbo;
+	unsigned int mLineVao;
+	unsigned int mLineVbo;
 };

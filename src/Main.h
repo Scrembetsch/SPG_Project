@@ -38,9 +38,10 @@ void HandleInput();
 void RenderDefaultPass();
 void DrawText();
 void RenderScene();
-void RenderGeneratedGeometry();
-void RenderParallaxObjects();
-void RenderParticleSystem();
+void RenderGeneratedGeometry(const glm::mat4& projection, const glm::mat4 view);
+void RenderParallaxObjects(const glm::mat4& projection, const glm::mat4 view);
+void RenderBackground(const glm::mat4& projection, const glm::mat4 view);
+void RenderParticleSystem(const glm::mat4& projection, const glm::mat4 view);
 void OnExit();
 void CreateWindow();
 
@@ -73,6 +74,8 @@ DollyController mDollyController;
 Material mGenerateRock;
 Material mRock;
 Material mParallax;
+Material mBackground;
+Material mLine;
 
 bool mEditMode = true;
 bool mWireframe = false;
@@ -80,6 +83,7 @@ unsigned int mFbo;
 unsigned int mFboTex;
 
 Plane* mParallaxPlane;
+Plane* mBackgroundPlane;
 
 unsigned int mRockVao;
 unsigned int mRockVbo;
@@ -95,6 +99,8 @@ int mRefinmentSteps;
 float mVerticesRock[6][2] = {{-1.0f, -1.0f}, {-1.0, 1.0}, {1.0, -1.0}, {1.0f, 1.0f}, {-1.0, 1.0}, {1.0, -1.0}};
 glm::vec3 mLightPos;
 
+int mUpdateRate;
+int mUpdateCounter;
 ParticleSystem mParticleSystem;
 
 Ray mCurrentRay;

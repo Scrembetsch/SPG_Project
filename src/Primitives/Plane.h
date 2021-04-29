@@ -111,13 +111,13 @@ public:
         glm::vec3 dir0 = pos1 - pos0;
         glm::vec3 dir1 = pos2 - pos0;
 
-        glm::vec3 normal = glm::cross(dir0, dir1);
+        glm::vec3 normal = glm::normalize(glm::cross(dir0, dir1));
         glm::vec3 center = pos0 + (dir0 / 2.0f) + (dir1 / 2.0f);
 
         float denom = glm::dot(normal, ray.mDirection);
         if (abs(denom) > ray.GetEpsilon())
         {
-            float hitT = glm::dot((center - ray.mOrigin), (normal) / denom);
+            hitT = glm::dot((center - ray.mOrigin), (normal) / denom);
             if (hitT >= ray.GetEpsilon()) return true;
         }
         return false;

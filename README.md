@@ -53,6 +53,13 @@ Open Solution and adjust **Additional Include & Linker Directories**
 
 > Hold **L_SHIFT** while Increasing/Decreasing steps for faster changes
 
+### Particle System
+|  Key   | Function                  |
+| :----: | ------------------------- |
+|   R    | Shot ray cast             |
+|   T    | Increase Update Rate      |
+|   G    | Decrease Update Rate      |
+
 ### Dolly Camera
 |    Key    | Function                                      |
 | :-------: | --------------------------------------------- |

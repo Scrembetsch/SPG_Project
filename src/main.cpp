@@ -41,6 +41,8 @@ void SetupMembers()
     mSteps = 10.0f;
     mRefinmentSteps = 10.0f;
     mLastFrameTime = 0;
+    mUpdateCounter = 0;
+    mUpdateRate = 1;
     mFirstMouse = true;
 }
 
@@ -98,14 +100,16 @@ void SetupMaterials()
     mRock.mTextures.push_back(new Texture3D(mFboTex, GL_TEXTURE0));
 
     mParallax.UseShader(new Shader());
-    mParallax.GetShader()->load("shader/parallaxMapping.vs", "shader/parallaxMapping.fs", nullptr, false);
-    mParallax.GetShader()->link();
+    mParallax.GetShader()->load("shader/parallaxMapping.vs", "shader/parallaxMapping.fs");
     mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Roof_Diffuse.jpg").string().c_str()), GL_TEXTURE0));
     mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Roof_Normal.jpg").string().c_str()), GL_TEXTURE1));
     mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Roof_Depth.jpg").string().c_str()), GL_TEXTURE2));
-    //mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Bricks_Diffuse.jpg").string().c_str()), GL_TEXTURE0));
-    //mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Bricks_Normal.jpg").string().c_str()), GL_TEXTURE1));
-    //mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Bricks_Depth.jpg").string().c_str()), GL_TEXTURE2));
+    mLine.UseShader(new Shader());
+    mLine.GetShader()->load("shader/bv.vs", "shader/bv.fs");
+
+    mBackground.UseShader(new Shader());
+    mBackground.GetShader()->load("shader/background.vs", "shader/background.fs");
+    mBackground.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/background.jpg").string().c_str()), GL_TEXTURE0));
     
     mParticleSystem.InitParticleSystem("shader/updateParticle.vs", "shader/updateParticle.gs", "shader/renderParticle.vs", "shader/renderParticle.gs", "shader/renderParticle.fs");
     mParticleSystem.mTexture = new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/particle.png").string().c_str()), GL_TEXTURE0);
@@ -170,6 +174,13 @@ void SetupArraysAndBuffers()
     modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f, 3.0f, 3.0f));
     modelMatrix = glm::translate(modelMatrix, glm::vec3(-2.0f, 0.0f, 5.0f));
     mParallaxPlane->mModelMatrix = modelMatrix;
+
+    mBackgroundPlane = new Plane();
+    modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(192.0f, -108.0f, 1.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f, 0.5f, 1.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 50.0f));
+    mBackgroundPlane->mModelMatrix = modelMatrix;
 }
 
 void RenderLoop()
@@ -233,13 +244,14 @@ void DrawText()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     std::string text;
-    text += "Edit Mode: \t  \t  \t";
+    text += "Edit Mode: \t  \t  \t  \t";
     text += mEditMode ? "ON\n" : "OFF\n";
-    text += "Camera Speed:  \t  \t" + std::to_string(mCamera.MovementSpeed) + "\n";
-    text += "Current Height:\t  \t" + std::to_string(mCamera.Position.y) + "\n";
-    text += "Parallax Scale:\t  \t" + std::to_string(mHeightScale) + "\n";
-    text += "Steps: \t  \t  \t  \t" + std::to_string(mSteps) + "\n";
-    text += "Refine Steps:  \t  \t" + std::to_string(mRefinmentSteps) + "\n";
+    text += "Camera Speed:  \t  \t  \t" + std::to_string(mCamera.MovementSpeed) + "\n";
+    text += "Current Height:\t  \t  \t" + std::to_string(mCamera.Position.y) + "\n";
+    text += "Parallax Scale:\t  \t  \t" + std::to_string(mHeightScale) + "\n";
+    text += "Steps: \t  \t  \t  \t  \t" + std::to_string(mSteps) + "\n";
+    text += "Refine Steps:  \t  \t  \t" + std::to_string(mRefinmentSteps) + "\n";
+    text += "Particle Update Rate:  \t1/" + std::to_string(mUpdateRate) + "\n";
     mTextRenderer.RenderFormattedText(text, 5.0f, SCR_HEIGHT - 20.0f, 0.4f, glm::vec3(1.0f, 1.0f, 1.0f), 0.1f);
 
     if (mFrameTime >= 0.5)
@@ -262,18 +274,21 @@ void DrawText()
 
 void RenderScene()
 {
-    //RenderGeneratedGeometry();
+    glm::mat4 projection = glm::perspective(glm::radians(mCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 200.0f);
+    glm::mat4 view = mCamera.GetViewMatrix();
+    //RenderGeneratedGeometry(projection, view);
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    RenderParallaxObjects();
-    RenderParticleSystem();
-    //mCurrentRay.Draw();
+    RenderParallaxObjects(projection, view);
+    RenderBackground(projection, view);
+    RenderParticleSystem(projection, view);
+
 }
 
-void RenderGeneratedGeometry()
+void RenderGeneratedGeometry(const glm::mat4& projection, const glm::mat4 view)
 {
     float scale = 0.2f;
 
@@ -300,8 +315,6 @@ void RenderGeneratedGeometry()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     mRock.use();
-    glm::mat4 projection = glm::perspective(glm::radians(mCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    glm::mat4 view = mCamera.GetViewMatrix();
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -(ROCK_HEIGHT / 2.0f * scale), 0.0f));
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, mCamera.Position.y, 0.0f));
@@ -321,11 +334,9 @@ void RenderGeneratedGeometry()
     glDrawArrays(GL_POINTS, 0, ROCK_WIDTH * ROCK_HEIGHT * ROCK_DEPTH);
 }
 
-void RenderParallaxObjects()
+void RenderParallaxObjects(const glm::mat4& projection, const glm::mat4 view)
 {
     mParallax.use();
-    glm::mat4 projection = glm::perspective(glm::radians(mCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    glm::mat4 view = mCamera.GetViewMatrix();
     mParallax.GetShader()->setMat4("uProjection", projection);
     mParallax.GetShader()->setMat4("uView", view);
     mParallax.GetShader()->setMat4("uModel", mParallaxPlane->mModelMatrix);
@@ -335,13 +346,26 @@ void RenderParallaxObjects()
     mParallax.GetShader()->setFloat("uSteps", float(mSteps));
     mParallax.GetShader()->setFloat("uRefinmentSteps", float(mRefinmentSteps));
     mParallaxPlane->Draw();
+
 }
 
-void RenderParticleSystem()
+void RenderBackground(const glm::mat4& projection, const glm::mat4 view)
 {
-    glm::mat4 projection = glm::perspective(glm::radians(mCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    mParticleSystem.SetMatrices(projection, mCamera.GetViewMatrix(), mCamera.Position, mCamera.Front, mCamera.Up);
-    mParticleSystem.UpdateParticles(mDeltaTime);
+    mBackground.use();
+    mBackground.GetShader()->setMat4("uProjection", projection);
+    mBackground.GetShader()->setMat4("uView", view);
+    mBackground.GetShader()->setMat4("uModel", mBackgroundPlane->mModelMatrix);
+    mBackgroundPlane->Draw();
+}
+
+void RenderParticleSystem(const glm::mat4& projection, const glm::mat4 view)
+{
+    mParticleSystem.SetMatrices(projection, view, mCamera.Position, mCamera.Front, mCamera.Up);
+    if (++mUpdateCounter >= mUpdateRate)
+    {
+        mParticleSystem.UpdateParticles(mDeltaTime);
+        mUpdateCounter = 0;
+    }
     mParticleSystem.RenderParticles();
 }
 
@@ -363,6 +387,7 @@ void OnExit()
     glDeleteBuffers(1, &mRockVbo);
     glDeleteBuffers(1, &mEmptyVbo);
     delete mParallaxPlane;
+    delete mBackgroundPlane;
     glfwTerminate();
 }
 
@@ -476,21 +501,25 @@ void ProcessInput(GLFWwindow* window)
         std::cout << "Yaw: " << mCamera.Yaw << ", Pitch: " << mCamera.Pitch << std::endl;
     }
 
+    // Particle system
     if (mKeyHandler.WasKeyReleased(GLFW_KEY_R))
     {
         mCurrentRay = Ray(mCamera.Position, mCamera.Front);
         mCurrentRay.UpdateLine();
-        float hit = 0;
-        if (mParallaxPlane->Intersects(mCurrentRay, hit))
+        if (mBackgroundPlane->Intersects(mCurrentRay, mCurrentRay.mHitDistance))
         {
-            glm::vec3 hitPos = mCurrentRay.mOrigin + mCurrentRay.mDirection * hit;
-            std::cout << "Hit: " << hit << std::endl;
-            std::cout << "HitPosition: " << hitPos.x << ", " << hitPos.y << ", " << hitPos.z << std::endl;
+            glm::vec3 hitPos = mCurrentRay.mOrigin + mCurrentRay.mDirection * mCurrentRay.mHitDistance;
+            mCurrentRay.UpdateLine();
+            mParticleSystem.SetGeneratorPosition(hitPos);
         }
-        else
-        {
-            std::cout << "No Hit" << std::endl;
-        }
+    }
+    if (mKeyHandler.WasKeyReleased(GLFW_KEY_T))
+    {
+        mUpdateRate = std::max(mUpdateRate - 1, 1);
+    }
+    if (mKeyHandler.WasKeyReleased(GLFW_KEY_G))
+    {
+        mUpdateRate++;
     }
 
     // Dolly Controller

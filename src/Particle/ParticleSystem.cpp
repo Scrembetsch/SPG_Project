@@ -197,6 +197,11 @@ void ParticleSystem::SetGeneratorProperties(const glm::vec3& position, const glm
 	mNumToGenerate = numToGenerate;
 }
 
+void ParticleSystem::SetGeneratorPosition(const glm::vec3& position)
+{
+	mPosition = position;
+}
+
 int ParticleSystem::GetNumParticles() const
 {
 	return mNumParticles;
