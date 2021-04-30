@@ -99,8 +99,6 @@ int mRefinmentSteps;
 float mVerticesRock[6][2] = {{-1.0f, -1.0f}, {-1.0, 1.0}, {1.0, -1.0}, {1.0f, 1.0f}, {-1.0, 1.0}, {1.0, -1.0}};
 glm::vec3 mLightPos;
 
-int mUpdateRate;
-int mUpdateCounter;
 ParticleSystem mParticleSystem;
 
 Ray mCurrentRay;

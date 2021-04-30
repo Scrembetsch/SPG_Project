@@ -179,7 +179,7 @@ void ParticleSystem::RenderParticles()
 	glDisable(GL_BLEND);
 }
 
-void ParticleSystem::SetGeneratorProperties(const glm::vec3& position, const glm::vec3& velocityMin, const glm::vec3& velocityMax, const glm::vec3& gravity, const glm::vec3 color, float minLifeTime, float maxLifeTime, float size, float every, int numToGenerate)
+void ParticleSystem::SetGeneratorProperties(const glm::vec3& position, const glm::vec3& velocityMin, const glm::vec3& velocityMax, const glm::vec3& gravity, const glm::vec3 color, float minLifeTime, float maxLifeTime, float size, float spawnTime, int numToGenerate)
 {
 	mPosition = position;
 	mVelocityMin = velocityMin;
@@ -191,8 +191,8 @@ void ParticleSystem::SetGeneratorProperties(const glm::vec3& position, const glm
 	mLifeTimeMin = minLifeTime;
 	mLifeTimeRange = maxLifeTime - minLifeTime;
 
-	mNextGenerationTime = every;
-	mElapsedTime = 0.8f;
+	mNextGenerationTime = spawnTime;
+	mElapsedTime = 0.0f;
 
 	mNumToGenerate = numToGenerate;
 }
@@ -207,15 +207,13 @@ int ParticleSystem::GetNumParticles() const
 	return mNumParticles;
 }
 
-void ParticleSystem::SetMatrices(const glm::mat4& projection, const glm::mat4& viewMat, const glm::vec3& eye, const glm::vec3& view, const glm::vec3& upVector)
+void ParticleSystem::SetMatrices(const glm::mat4& projection, const glm::mat4& viewMat, const glm::vec3& view, const glm::vec3& upVector)
 {
 	mProjection = projection;
 	mView = viewMat;
-	glm::vec3 nView = view - eye;
-	nView = glm::normalize(nView);
-	mQuad1 = glm::cross(nView, upVector);
+	mQuad1 = glm::cross(view, upVector);
 	mQuad1 = glm::normalize(mQuad1);
-	mQuad2 = glm::cross(nView, mQuad1);
+	mQuad2 = glm::cross(view, mQuad1);
 	mQuad2 = glm::normalize(mQuad2);
 }
 

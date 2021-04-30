@@ -41,9 +41,19 @@ void SetupMembers()
     mSteps = 10.0f;
     mRefinmentSteps = 10.0f;
     mLastFrameTime = 0;
-    mUpdateCounter = 0;
-    mUpdateRate = 1;
     mFirstMouse = true;
+
+    mParticleSystem.SetGeneratorProperties(
+        glm::vec3(-2.0f, 0.0f, 2.0f), // Where the particles are generated
+        glm::vec3(-5, 0, -5), // Minimal velocity
+        glm::vec3(5, 5, 5), // Maximal velocity
+        glm::vec3(0, -1, 0), // Gravity force applied to particles
+        glm::vec3(1.0f, 1.0f, 1.0f), // Color
+        1.5f, // Minimum lifetime in seconds
+        2.0f, // Maximum lifetime in seconds
+        1.0f, // Rendered size
+        0.02f, // Spawn every 0.05 seconds
+        30); // And spawn 30 particles
 }
 
 int SetupOpenGL()
@@ -113,18 +123,6 @@ void SetupMaterials()
     
     mParticleSystem.InitParticleSystem("shader/updateParticle.vs", "shader/updateParticle.gs", "shader/renderParticle.vs", "shader/renderParticle.gs", "shader/renderParticle.fs");
     mParticleSystem.mTexture = new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/particle.png").string().c_str()), GL_TEXTURE0);
-
-    mParticleSystem.SetGeneratorProperties(
-        glm::vec3(-2.0f, 0.0f, 2.0f), // Where the particles are generated
-        glm::vec3(-5, 0, -5), // Minimal velocity
-        glm::vec3(5, 5, 5), // Maximal velocity
-        glm::vec3(0, -1, 0), // Gravity force applied to particles
-        glm::vec3(1.0f, 1.0f, 1.0f), // Color
-        1.5f, // Minimum lifetime in seconds
-        2.0f, // Maximum lifetime in seconds
-        1.0f, // Rendered size
-        0.02f, // Spawn every 0.05 seconds
-        30); // And spawn 30 particles
 }
 
 bool SetupTextRenderer()
@@ -244,14 +242,14 @@ void DrawText()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     std::string text;
-    text += "Edit Mode: \t  \t  \t  \t";
+    text += "Edit Mode: \t  \t  \t";
     text += mEditMode ? "ON\n" : "OFF\n";
-    text += "Camera Speed:  \t  \t  \t" + std::to_string(mCamera.MovementSpeed) + "\n";
-    text += "Current Height:\t  \t  \t" + std::to_string(mCamera.Position.y) + "\n";
-    text += "Parallax Scale:\t  \t  \t" + std::to_string(mHeightScale) + "\n";
-    text += "Steps: \t  \t  \t  \t  \t" + std::to_string(mSteps) + "\n";
-    text += "Refine Steps:  \t  \t  \t" + std::to_string(mRefinmentSteps) + "\n";
-    text += "Particle Update Rate:  \t1/" + std::to_string(mUpdateRate) + "\n";
+    text += "Camera Speed:  \t  \t" + std::to_string(mCamera.MovementSpeed) + "\n";
+    text += "Current Height:\t  \t" + std::to_string(mCamera.Position.y) + "\n";
+    text += "Parallax Scale:\t  \t" + std::to_string(mHeightScale) + "\n";
+    text += "Steps: \t  \t  \t  \t" + std::to_string(mSteps) + "\n";
+    text += "Refine Steps:  \t  \t" + std::to_string(mRefinmentSteps) + "\n";
+    text += "Particle Spawn Rate:" + std::to_string(mParticleSystem.mNextGenerationTime) + "\n";
     mTextRenderer.RenderFormattedText(text, 5.0f, SCR_HEIGHT - 20.0f, 0.4f, glm::vec3(1.0f, 1.0f, 1.0f), 0.1f);
 
     if (mFrameTime >= 0.5)
@@ -285,7 +283,6 @@ void RenderScene()
     RenderParallaxObjects(projection, view);
     RenderBackground(projection, view);
     RenderParticleSystem(projection, view);
-
 }
 
 void RenderGeneratedGeometry(const glm::mat4& projection, const glm::mat4 view)
@@ -360,12 +357,8 @@ void RenderBackground(const glm::mat4& projection, const glm::mat4 view)
 
 void RenderParticleSystem(const glm::mat4& projection, const glm::mat4 view)
 {
-    mParticleSystem.SetMatrices(projection, view, mCamera.Position, mCamera.Front, mCamera.Up);
-    if (++mUpdateCounter >= mUpdateRate)
-    {
-        mParticleSystem.UpdateParticles(mDeltaTime);
-        mUpdateCounter = 0;
-    }
+    mParticleSystem.SetMatrices(projection, view, mCamera.Front, mCamera.Up);
+    mParticleSystem.UpdateParticles(mDeltaTime);
     mParticleSystem.RenderParticles();
 }
 
@@ -513,13 +506,13 @@ void ProcessInput(GLFWwindow* window)
             mParticleSystem.SetGeneratorPosition(hitPos);
         }
     }
-    if (mKeyHandler.WasKeyReleased(GLFW_KEY_T))
+    if (mKeyHandler.IsKeyDown(GLFW_KEY_T))
     {
-        mUpdateRate = std::max(mUpdateRate - 1, 1);
+        mParticleSystem.mNextGenerationTime += delta;
     }
-    if (mKeyHandler.WasKeyReleased(GLFW_KEY_G))
+    if (mKeyHandler.IsKeyDown(GLFW_KEY_G))
     {
-        mUpdateRate++;
+        mParticleSystem.mNextGenerationTime = std::max(mParticleSystem.mNextGenerationTime - delta, 0.01f);
     }
 
     // Dolly Controller

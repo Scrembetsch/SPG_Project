@@ -17,13 +17,14 @@ public:
 	void UpdateParticles(float timeStep);
 	void RenderParticles();
 
-	void SetGeneratorProperties(const glm::vec3& position, const glm::vec3& velocityMin, const glm::vec3& velocityMax, const glm::vec3& gravity, const glm::vec3 color, float minLifeTime, float maxLifeTime, float size, float every, int numToGenerate);
+	void SetGeneratorProperties(const glm::vec3& position, const glm::vec3& velocityMin, const glm::vec3& velocityMax, const glm::vec3& gravity, const glm::vec3 color, float minLifeTime, float maxLifeTime, float size, float spawnTime, int numToGenerate);
 	void SetGeneratorPosition(const glm::vec3& position);
 	int GetNumParticles() const;
 
-	void SetMatrices(const glm::mat4& projection, const glm::mat4& viewMat, const glm::vec3& eye, const glm::vec3& view, const glm::vec3& upVector);
+	void SetMatrices(const glm::mat4& projection, const glm::mat4& viewMat, const glm::vec3& view, const glm::vec3& upVector);
 
 	Texture2D* mTexture;
+	float mNextGenerationTime;
 private:
 	void CheckInit() const;
 
@@ -48,7 +49,6 @@ private:
 	glm::vec3 mQuad2;
 
 	float mElapsedTime;
-	float mNextGenerationTime;
 
 	glm::vec3 mPosition;
 	glm::vec3 mVelocityMin;
