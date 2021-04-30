@@ -45,15 +45,15 @@ void SetupMembers()
 
     mParticleSystem.SetGeneratorProperties(
         glm::vec3(-2.0f, 0.0f, 2.0f), // Where the particles are generated
-        glm::vec3(-5, 0, -5), // Minimal velocity
-        glm::vec3(5, 5, 5), // Maximal velocity
-        glm::vec3(0, -1, 0), // Gravity force applied to particles
+        glm::vec3(-20, 30, -5), // Minimal velocity
+        glm::vec3(20, 100, 5), // Maximal velocity
+        glm::vec3(0, -20, 0), // Gravity force applied to particles
         glm::vec3(1.0f, 1.0f, 1.0f), // Color
-        1.5f, // Minimum lifetime in seconds
-        2.0f, // Maximum lifetime in seconds
+        4.0f, // Minimum lifetime in seconds
+        5.0f, // Maximum lifetime in seconds
         1.0f, // Rendered size
         0.02f, // Spawn every 0.05 seconds
-        30); // And spawn 30 particles
+        10); // And spawn 30 particles
 }
 
 int SetupOpenGL()
@@ -249,7 +249,7 @@ void DrawText()
     text += "Parallax Scale:\t  \t" + std::to_string(mHeightScale) + "\n";
     text += "Steps: \t  \t  \t  \t" + std::to_string(mSteps) + "\n";
     text += "Refine Steps:  \t  \t" + std::to_string(mRefinmentSteps) + "\n";
-    text += "Particle Spawn Rate:" + std::to_string(mParticleSystem.mNextGenerationTime) + "\n";
+    text += "Particle Spawn Time:" + std::to_string(mParticleSystem.mNextGenerationTime) + "\n";
     mTextRenderer.RenderFormattedText(text, 5.0f, SCR_HEIGHT - 20.0f, 0.4f, glm::vec3(1.0f, 1.0f, 1.0f), 0.1f);
 
     if (mFrameTime >= 0.5)

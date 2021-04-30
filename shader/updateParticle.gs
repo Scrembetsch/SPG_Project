@@ -46,7 +46,7 @@ float randZeroOne()
     n = (n >> 9u) | 0x3F800000u;
  
     float fRes =  2.0 - uintBitsToFloat(n);
-    lLocalSeed = vec3(lLocalSeed.x + 147158.0 * fRes, lLocalSeed.y*fRes  + 415161.0 * fRes, lLocalSeed.z + 324154.0*fRes);
+    lLocalSeed = vec3(lLocalSeed.x + 147158.0 * fRes, lLocalSeed.y * fRes  + 415161.0 * fRes, lLocalSeed.z + 324154.0 * fRes);
     return fRes;
 }
 
@@ -54,15 +54,19 @@ void main()
 {
   lLocalSeed = uRandomSeed;
   
-  // gl_Position doesn't matter now, as rendering is discarded, so I don't set it at all
-
   vPositionOut = vPositionPass[0];
   vVelocityOut = vVelocityPass[0];
-  if(vTypePass[0] != 0)vPositionOut += vVelocityOut*uTimeStep;
-  if(vTypePass[0] != 0)vVelocityOut += uGravity*uTimeStep;
+  if(vTypePass[0] != 0)
+  {
+    vPositionOut += vVelocityOut * uTimeStep;
+  }
+  if(vTypePass[0] != 0)
+  {
+    vVelocityOut += uGravity * uTimeStep;
+  }
 
   vColorOut = vColorPass[0];
-  vLifeTimeOut = vLifeTimePass[0]-uTimeStep;
+  vLifeTimeOut = vLifeTimePass[0] - uTimeStep;
   vSizeOut = vSizePass[0];
   vTypeOut = vTypePass[0];
 

@@ -23,7 +23,21 @@ void main()
   float fSize = vSizePass[0];
   mat4 mVP = uProjection * uView;
   
-  vColorPart = vec4(vColorPass[0], vLifeTimePass[0]);
+  if(vLifeTimePass[0] > 3)
+  {
+    float normalized = 1 - ((vLifeTimePass[0] - 3) / 1);
+    vColorPart = mix(vec4(1.0, 0.0, 0.0, 1.0), vec4(0.0, 1.0, 0.0, 1.0), normalized);
+  }
+  else if(vLifeTimePass[0] > 1)
+  {
+    float normalized = 1 - ((vLifeTimePass[0] - 1) / 2);
+    vColorPart = mix(vec4(0.0, 1.0, 0.0, 1.0), vec4(0.0, 0.0, 1.0, 1.0), normalized);
+  }
+  else
+  {
+    float normalized = 1 - vLifeTimePass[0];
+    vColorPart = mix(vec4(0.0, 0.0, 1.0, 1.0), vec4(vColorPass[0], vLifeTimePass[0]), normalized);
+  }
       
   vec3 vPos = vPosOld + (-uQuad1 - uQuad2) * fSize;
   vTexCoord = vec2(0.0, 0.0);

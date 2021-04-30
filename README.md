@@ -57,8 +57,8 @@ Open Solution and adjust **Additional Include & Linker Directories**
 |  Key   | Function                  |
 | :----: | ------------------------- |
 |   R    | Shot ray cast             |
-|   T    | Increase Update Rate      |
-|   G    | Decrease Update Rate      |
+|   T    | Increase Update Time      |
+|   G    | Decrease Update Time      |
 
 ### Dolly Camera
 |    Key    | Function                                      |
