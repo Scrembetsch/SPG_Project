@@ -45,8 +45,8 @@ void RenderParticleSystem(const glm::mat4& projection, const glm::mat4 view);
 void OnExit();
 void CreateWindow();
 
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 
 const unsigned int ROCK_WIDTH = 96;
 const unsigned int ROCK_HEIGHT = 256;

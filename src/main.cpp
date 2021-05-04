@@ -28,8 +28,8 @@ int main(int argc, char** argv)
 
 void SetupMembers()
 {
-    mCamera.Position = glm::vec3(24.913f, 0.894679f, -14.491f);
-    mCamera.Yaw = 132.3f;
+    mCamera.Position = glm::vec3(24.913f, 0.894679f, -50.491f);
+    mCamera.Yaw = 90.0f;
     mCamera.Pitch = -1.4f;
     mCamera.updateCameraVectors();
     mLightPos = glm::vec3(50.0f, 40.0f, -20.0f);
@@ -103,31 +103,31 @@ int SetupOpenGL()
 void SetupMaterials()
 {
     mGenerateRock.UseShader(new Shader());
-    mGenerateRock.GetShader()->load("shader/rock.vs", "shader/rock.fs");
+    mGenerateRock.GetShader()->load("shader/MarchingCube/generate.vs", "shader/MarchingCube/generate.fs");
 
     mRock.UseShader(new Shader());
-    mRock.GetShader()->load("shader/renderRock.vs", "shader/renderRock.fs", "shader/renderRock.gs");
+    mRock.GetShader()->load("shader/MarchingCube/render.vs", "shader/MarchingCube/render.fs", "shader/MarchingCube/render.gs");
     mRock.mTextures.push_back(new Texture3D(mFboTex, GL_TEXTURE0));
 
     mParallax.UseShader(new Shader());
-    mParallax.GetShader()->load("shader/parallaxMapping.vs", "shader/parallaxMapping.fs");
+    mParallax.GetShader()->load("shader/Parallax/parallax.vs", "shader/Parallax/parallax.fs");
     mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Roof_Diffuse.jpg").string().c_str()), GL_TEXTURE0));
     mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Roof_Normal.jpg").string().c_str()), GL_TEXTURE1));
     mParallax.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/Roof_Depth.jpg").string().c_str()), GL_TEXTURE2));
     mLine.UseShader(new Shader());
-    mLine.GetShader()->load("shader/bv.vs", "shader/bv.fs");
+    mLine.GetShader()->load("shader/debug.vs", "shader/debug.fs");
 
     mBackground.UseShader(new Shader());
-    mBackground.GetShader()->load("shader/background.vs", "shader/background.fs");
+    mBackground.GetShader()->load("shader/default.vs", "shader/default.fs");
     mBackground.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/background.jpg").string().c_str()), GL_TEXTURE0));
-    
-    mParticleSystem.InitParticleSystem("shader/updateParticle.vs", "shader/updateParticle.gs", "shader/renderParticle.vs", "shader/renderParticle.gs", "shader/renderParticle.fs");
+
+    mParticleSystem.InitParticleSystem("shader/Particle/update.vs", "shader/Particle/update.gs", "shader/Particle/render.vs", "shader/Particle/render.gs", "shader/Particle/render.fs");
     mParticleSystem.mTexture = new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/particle.png").string().c_str()), GL_TEXTURE0);
 }
 
 bool SetupTextRenderer()
 {
-    mTextRenderer.LoadShader("shader/text.vs", "shader/text.fs");
+    mTextRenderer.LoadShader("shader/Text/text.vs", "shader/Text/text.fs");
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
     mTextRenderer.SetProjection(projection, "uProjection");
     return mTextRenderer.SetupFreetype(std::filesystem::absolute("data/fonts/Consolas.ttf").string());
@@ -274,12 +274,7 @@ void RenderScene()
 {
     glm::mat4 projection = glm::perspective(glm::radians(mCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 200.0f);
     glm::mat4 view = mCamera.GetViewMatrix();
-    //RenderGeneratedGeometry(projection, view);
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    RenderGeneratedGeometry(projection, view);
     RenderParallaxObjects(projection, view);
     RenderBackground(projection, view);
     RenderParticleSystem(projection, view);
