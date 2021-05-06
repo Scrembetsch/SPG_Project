@@ -31,23 +31,43 @@ int SetupOpenGL();
 void SetupMaterials();
 void SetupArraysAndBuffers();
 bool SetupTextRenderer();
+
+void HandleInput();
+
+void HandlePreFrameLogic();
 void RenderLoop();
 void HandleEndFrameLogic();
-void HandlePreFrameLogic();
-void HandleInput();
+
+void UpdateScene();
+void RenderShadowPass();
 void RenderDefaultPass();
 void DrawText();
+
+void UpdateGeneratedGeometry();
+void UpdateParticleSystem();
+
 void RenderScene();
-void RenderGeneratedGeometry(const glm::mat4& projection, const glm::mat4 view);
-void RenderParallaxObjects(const glm::mat4& projection, const glm::mat4 view);
-void RenderBackground(const glm::mat4& projection, const glm::mat4 view);
-void RenderParticleSystem(const glm::mat4& projection, const glm::mat4 view);
+void RenderGeneratedGeometry(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace);
+void RenderParallaxObjects(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace);
+void RenderBackground(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace);
+void RenderParticleSystem(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace);
+
+
 void OnExit();
 void CreateWindow();
 
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
+const unsigned int SHADOW_WIDTH = 2048;
+const unsigned int SHADOW_HEIGHT = 2048;
 
+const float LIGHT_NEAR_PLANE = 0.5f;
+const float LIGHT_FAR_PLANE = 100.0f;
+
+unsigned int CAMERA_WIDTH = 0;
+unsigned int CAMERA_HEIGHT = 0;
+
+const float ROCK_SCALE = 0.2f;
 const unsigned int ROCK_WIDTH = 96;
 const unsigned int ROCK_HEIGHT = 256;
 const unsigned int ROCK_DEPTH = 96;
@@ -75,6 +95,7 @@ Material mGenerateRock;
 Material mRock;
 Material mParallax;
 Material mBackground;
+Material mFloor;
 Material mLine;
 
 bool mEditMode = true;
@@ -84,12 +105,20 @@ unsigned int mFboTex;
 
 Plane* mParallaxPlane;
 Plane* mBackgroundPlane;
+Plane* mFloorPlane;
+Plane* mShadowPlane;
+Plane* mShadowPlane2;
 
 unsigned int mRockVao;
 unsigned int mRockVbo;
 
 unsigned int mEmptyVao;
 unsigned int mEmptyVbo;
+
+unsigned int mDepthMapFbo;
+unsigned int mDepthMap;
+
+float mShadowPass;
 
 float mHeight;
 float mHeightScale;
@@ -98,6 +127,7 @@ int mRefinmentSteps;
 
 float mVerticesRock[6][2] = {{-1.0f, -1.0f}, {-1.0, 1.0}, {1.0, -1.0}, {1.0f, 1.0f}, {-1.0, 1.0}, {1.0, -1.0}};
 glm::vec3 mLightPos;
+glm::vec3 mLightDir;
 
 ParticleSystem mParticleSystem;
 

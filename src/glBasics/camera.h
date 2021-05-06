@@ -13,7 +13,7 @@
 const float YAW = 0.0f;
 const float PITCH = 0.0f;
 const float ROLL = 0.0f;
-const float SPEED = 15.0f;
+const float SPEED = 50.0f;
 const float SENSITIVITY = 0.1f;
 const float ZOOM = 45.0f;
 
@@ -51,7 +51,7 @@ public:
     // constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH)
         : Front(glm::vec3(0.0f, 0.0f, -1.0f))
-        ,MovementSpeed(SPEED * 1)
+        , MovementSpeed(SPEED)
         , MouseSensitivity(SENSITIVITY)
         , Zoom(ZOOM)
     {
@@ -64,7 +64,7 @@ public:
     // constructor with scalar values
     Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch)
         : Front(glm::vec3(0.0f, 0.0f, -1.0f))
-        , MovementSpeed(SPEED * 1)
+        , MovementSpeed(SPEED)
         , MouseSensitivity(SENSITIVITY)
         , Zoom(ZOOM)
     {

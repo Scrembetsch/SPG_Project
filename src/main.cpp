@@ -28,11 +28,12 @@ int main(int argc, char** argv)
 
 void SetupMembers()
 {
-    mCamera.Position = glm::vec3(24.913f, 0.894679f, -50.491f);
-    mCamera.Yaw = 90.0f;
-    mCamera.Pitch = -1.4f;
-    mCamera.updateCameraVectors();
-    mLightPos = glm::vec3(50.0f, 40.0f, -20.0f);
+    mCamera.Position = glm::vec3(-21.7381f, 16.0659f, -32.0739f);
+    //mCamera.Yaw = 90.0f;
+    //mCamera.Pitch = 0.0f;
+    //mCamera.updateCameraVectors();
+    mLightPos = glm::vec3(-2.0f, 4.0f, -1.0f);
+    mLightDir = glm::vec3(0.0f, 0.0f, 0.0f) - mLightPos;
     mShowFPS = 0;
     mFrameCount = 0;
     mFrameTime = 0;
@@ -97,6 +98,7 @@ int SetupOpenGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_CULL_FACE);
     return 0;
 }
 
@@ -120,6 +122,10 @@ void SetupMaterials()
     mBackground.UseShader(new Shader());
     mBackground.GetShader()->load("shader/default.vs", "shader/default.fs");
     mBackground.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/background.jpg").string().c_str()), GL_TEXTURE0));
+
+    mFloor.UseShader(new Shader());
+    mFloor.GetShader()->load("shader/default.vs", "shader/default.fs");
+    mFloor.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/floor.png").string().c_str()), GL_TEXTURE0));
 
     mParticleSystem.InitParticleSystem("shader/Particle/update.vs", "shader/Particle/update.gs", "shader/Particle/render.vs", "shader/Particle/render.gs", "shader/Particle/render.fs");
     mParticleSystem.mTexture = new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/particle.png").string().c_str()), GL_TEXTURE0);
@@ -166,19 +172,60 @@ void SetupArraysAndBuffers()
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
     glBindVertexArray(0);
 
+    // Confgiure depth map FBO
+    glGenFramebuffers(1, &mDepthMapFbo);
+    // Create depth texture
+    glGenTextures(1, &mDepthMap);
+    glBindTexture(GL_TEXTURE_2D, mDepthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = {1.0, 1.0, 1.0, 1.0};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    // Attach depth map as FBOs depth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, mDepthMapFbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mDepthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     mParallaxPlane = new Plane();
     glm::mat4 modelMatrix = glm::mat4(1.0f);
-    modelMatrix = glm::rotate(modelMatrix, glm::radians(135.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f, 3.0f, 3.0f));
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(135.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     modelMatrix = glm::translate(modelMatrix, glm::vec3(-2.0f, 0.0f, 5.0f));
     mParallaxPlane->mModelMatrix = modelMatrix;
 
     mBackgroundPlane = new Plane();
     modelMatrix = glm::mat4(1.0f);
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(192.0f, -108.0f, 1.0f));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f, 0.5f, 1.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(192.0f, 108.0f, 1.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f, 0.2f, 1.0f));
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 50.0f));
     mBackgroundPlane->mModelMatrix = modelMatrix;
+
+    mFloorPlane = new Plane();
+    modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(25.0f, 25.0f, 1.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, -0.5f));
+    mFloorPlane->mModelMatrix = modelMatrix;
+
+    mShadowPlane = new Plane();
+    modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 3.0f));
+    mShadowPlane->mModelMatrix = modelMatrix;
+
+    mShadowPlane2 = new Plane();
+    modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 1.0f));
+    mShadowPlane2->mModelMatrix = modelMatrix;
 }
 
 void RenderLoop()
@@ -188,6 +235,9 @@ void RenderLoop()
 
     HandleInput();
 
+    UpdateScene();
+
+    RenderShadowPass();
     RenderDefaultPass();
 
     DrawText();
@@ -215,6 +265,9 @@ void HandlePreFrameLogic()
     mDeltaTime = currentFrame - mLastFrameTime;
     mLastFrameTime = currentFrame;
 
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     Util::PrintErrors();
 }
 
@@ -230,9 +283,59 @@ void HandleInput()
     }
 }
 
+void UpdateScene()
+{
+    //UpdateGeneratedGeometry();
+    //UpdateParticleSystem();
+}
+
+void UpdateGeneratedGeometry()
+{
+    // Reset polygon mode before drawing noise (otherwise result is not correct)
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glViewport(0, 0, ROCK_WIDTH, ROCK_HEIGHT);
+    mGenerateRock.use();
+    glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
+    glClear(GL_COLOR_BUFFER_BIT);
+    mGenerateRock.GetShader()->setFloat("uHeight", mCamera.Position.y * ROCK_SCALE / 5);
+    for (int i = 0; i < ROCK_DEPTH; i++)
+    {
+        float layer = float(i) / float(ROCK_DEPTH - 1.0f);
+        mGenerateRock.GetShader()->setFloat("uLayer", layer);
+        glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, mFboTex, 0, i);
+        glBindVertexArray(mRockVao);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+}
+
+void UpdateParticleSystem()
+{
+    mParticleSystem.UpdateParticles(mDeltaTime);
+}
+
+void RenderShadowPass()
+{
+    mShadowPass = 1;
+    CAMERA_WIDTH = SHADOW_WIDTH;
+    CAMERA_HEIGHT = SHADOW_HEIGHT;
+
+    glViewport(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, mDepthMapFbo);
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+    RenderScene();
+}
+
 void RenderDefaultPass()
 {
-    // Set light uniforms
+    mShadowPass = 0;
+    CAMERA_WIDTH = SCR_WIDTH;
+    CAMERA_HEIGHT = SCR_HEIGHT;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     RenderScene();
 }
 
@@ -274,49 +377,34 @@ void RenderScene()
 {
     glm::mat4 projection = glm::perspective(glm::radians(mCamera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 200.0f);
     glm::mat4 view = mCamera.GetViewMatrix();
-    RenderGeneratedGeometry(projection, view);
-    RenderParallaxObjects(projection, view);
-    RenderBackground(projection, view);
-    RenderParticleSystem(projection, view);
+
+    glm::mat4 lightProjection;
+    glm::mat4 lightView;
+    glm::mat4 lightSpaceMatrix;
+    lightProjection = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, LIGHT_NEAR_PLANE, LIGHT_FAR_PLANE);
+    lightView = glm::lookAt(mLightPos, mLightDir + mLightPos, glm::vec3(0.0, 1.0, 0.0));
+    lightSpaceMatrix = lightProjection * lightView;
+
+    //RenderGeneratedGeometry(projection, view, lightSpaceMatrix);
+    //RenderParallaxObjects(projection, view, lightSpaceMatrix);
+    RenderBackground(projection, view, lightSpaceMatrix);
+    //RenderParticleSystem(projection, view, lightSpaceMatrix);
 }
 
-void RenderGeneratedGeometry(const glm::mat4& projection, const glm::mat4 view)
+void RenderGeneratedGeometry(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace)
 {
-    float scale = 0.2f;
-
-    // Reset polygon mode before drawing noise (otherwise result is not correct)
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glViewport(0, 0, ROCK_WIDTH, ROCK_HEIGHT);
-    mGenerateRock.use();
-    glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
-    glClear(GL_COLOR_BUFFER_BIT);
-    mGenerateRock.GetShader()->setFloat("uHeight", mCamera.Position.y * scale / 5);
-    for (int i = 0; i < ROCK_DEPTH; i++)
-    {
-        float layer = float(i) / float(ROCK_DEPTH - 1.0f);
-        mGenerateRock.GetShader()->setFloat("uLayer", layer);
-        glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_3D, mFboTex, 0, i);
-        glBindVertexArray(mRockVao);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
-
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     mRock.use();
     glm::mat4 modelMatrix = glm::mat4(1.0f);
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -(ROCK_HEIGHT / 2.0f * scale), 0.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -(ROCK_HEIGHT / 2.0f * ROCK_SCALE), 0.0f));
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, mCamera.Position.y, 0.0f));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(scale, scale, scale));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(ROCK_SCALE, ROCK_SCALE, ROCK_SCALE));
     mRock.GetShader()->setMat4("uProjection", projection);
     mRock.GetShader()->setMat4("uView", view);
     mRock.GetShader()->setMat4("uModel", modelMatrix);
     mRock.GetShader()->setInt("uWidth", ROCK_WIDTH);
     mRock.GetShader()->setInt("uHeight", ROCK_HEIGHT);
     mRock.GetShader()->setInt("uDepth", ROCK_DEPTH);
+
     if (mWireframe)
     {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -326,7 +414,7 @@ void RenderGeneratedGeometry(const glm::mat4& projection, const glm::mat4 view)
     glDrawArrays(GL_POINTS, 0, ROCK_WIDTH * ROCK_HEIGHT * ROCK_DEPTH);
 }
 
-void RenderParallaxObjects(const glm::mat4& projection, const glm::mat4 view)
+void RenderParallaxObjects(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace)
 {
     mParallax.use();
     mParallax.GetShader()->setMat4("uProjection", projection);
@@ -338,22 +426,52 @@ void RenderParallaxObjects(const glm::mat4& projection, const glm::mat4 view)
     mParallax.GetShader()->setFloat("uSteps", float(mSteps));
     mParallax.GetShader()->setFloat("uRefinmentSteps", float(mRefinmentSteps));
     mParallaxPlane->Draw();
-
 }
 
-void RenderBackground(const glm::mat4& projection, const glm::mat4 view)
+void RenderBackground(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace)
 {
+    glEnable(GL_BLEND);
+
     mBackground.use();
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, mDepthMap);
+    mBackground.GetShader()->setVec4("uColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    mBackground.GetShader()->setMat4("uLightSpaceMatrix", lightSpace);
+    mBackground.GetShader()->setVec3("uLightPos", mLightPos);
+    mBackground.GetShader()->setVec3("uViewPos", mCamera.Position);
+    mBackground.GetShader()->setFloat("uShadowPass", mShadowPass);
     mBackground.GetShader()->setMat4("uProjection", projection);
     mBackground.GetShader()->setMat4("uView", view);
     mBackground.GetShader()->setMat4("uModel", mBackgroundPlane->mModelMatrix);
     mBackgroundPlane->Draw();
+
+    mFloor.use();
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, mDepthMap);
+    mFloor.GetShader()->setVec4("uColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    mFloor.GetShader()->setMat4("uLightSpaceMatrix", lightSpace);
+    mFloor.GetShader()->setVec3("uLightPos", mLightPos);
+    mFloor.GetShader()->setVec3("uViewPos", mCamera.Position);
+    mFloor.GetShader()->setFloat("uShadowPass", mShadowPass);
+    mFloor.GetShader()->setMat4("uProjection", projection);
+    mFloor.GetShader()->setMat4("uView", view);
+    mFloor.GetShader()->setMat4("uModel", mFloorPlane->mModelMatrix);
+    mFloorPlane->Draw();
+
+    mFloor.GetShader()->setVec4("uColor", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    mFloor.GetShader()->setMat4("uModel", mShadowPlane->mModelMatrix);
+    mShadowPlane->Draw();
+
+    mFloor.GetShader()->setVec4("uColor", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    mFloor.GetShader()->setMat4("uModel", mShadowPlane2->mModelMatrix);
+    mShadowPlane2->Draw();
+
+    glDisable(GL_BLEND);
 }
 
-void RenderParticleSystem(const glm::mat4& projection, const glm::mat4 view)
+void RenderParticleSystem(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace)
 {
     mParticleSystem.SetMatrices(projection, view, mCamera.Front, mCamera.Up);
-    mParticleSystem.UpdateParticles(mDeltaTime);
     mParticleSystem.RenderParticles();
 }
 
@@ -376,6 +494,9 @@ void OnExit()
     glDeleteBuffers(1, &mEmptyVbo);
     delete mParallaxPlane;
     delete mBackgroundPlane;
+    delete mFloorPlane;
+    delete mShadowPlane;
+    delete mShadowPlane2;
     glfwTerminate();
 }
 
