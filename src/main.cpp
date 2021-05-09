@@ -551,12 +551,16 @@ void OnExit()
     glDeleteTextures(1, &mFboTex);
     glDeleteVertexArrays(1, &mRockVao);
     glDeleteBuffers(1, &mRockVbo);
-    glDeleteBuffers(1, &mEmptyVbo);
+    glDeleteVertexArrays(1, &mEmptyVao);
+    glDeleteFramebuffers(1, &mDepthMapFbo);
+    glDeleteFramebuffers(1, &mDepthMapFilterFbo);
     delete mParallaxPlane;
     delete mBackgroundPlane;
     delete mFloorPlane;
     delete mShadowPlane;
     delete mShadowPlane2;
+    delete mDisplacementPlane;
+    delete mFilterPlane;
     glfwTerminate();
 }
 
@@ -590,12 +594,10 @@ void ProcessInput(GLFWwindow* window)
     }
     if (mKeyHandler.IsKeyDown(GLFW_KEY_SPACE))
     {
-        //mHeight += delta;
         mCamera.ProcessKeyboard(Camera::Camera_Movement::UP, delta);
     }
     if (mKeyHandler.IsKeyDown(GLFW_KEY_LEFT_CONTROL))
     {
-        //mHeight -= delta;
         mCamera.ProcessKeyboard(Camera::Camera_Movement::DOWN, delta);
     }
 

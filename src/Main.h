@@ -117,7 +117,6 @@ unsigned int mRockVao;
 unsigned int mRockVbo;
 
 unsigned int mEmptyVao;
-unsigned int mEmptyVbo;
 
 unsigned int mDepthMapFbo;
 unsigned int mDepthMapFilterFbo;
