@@ -49,7 +49,7 @@ bool ParticleSystem::InitParticleSystem(const std::string& updateVertShader, con
 		"vTypeOut"
 	};
 	unsigned int varyingSize = sizeof(sVaryings) / sizeof(sVaryings[0]);
-	mUpdateShader.load(updateVertShader.c_str(), nullptr, updateGeoShader.c_str(), false);
+	mUpdateShader.load(updateVertShader.c_str(), nullptr, updateGeoShader.c_str(), nullptr, nullptr, false);
 	mRenderShader.load(renderVertShader.c_str(), renderFragShader.c_str(), renderGeoShader.c_str());
 
 	for(int i = 0; i < varyingSize; i++)

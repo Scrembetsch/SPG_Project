@@ -1,0 +1,17 @@
+#version 450
+
+layout (vertices = 3) out;
+
+uniform float uSubdivide;
+
+void main(void)
+{
+    if(gl_InvocationID == 0)
+    {
+        gl_TessLevelInner[0] = uSubdivide;
+        gl_TessLevelOuter[0] = uSubdivide;
+        gl_TessLevelOuter[1] = uSubdivide;
+        gl_TessLevelOuter[2] = uSubdivide;
+    }
+    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+}

@@ -50,6 +50,7 @@ void UpdateParticleSystem();
 void RenderScene();
 void RenderGeneratedGeometry(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace);
 void RenderParallaxObjects(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace);
+void RenderDisplacementObjects(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace);
 void RenderBackground(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace);
 void RenderParticleSystem(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace);
 
@@ -99,6 +100,7 @@ Material mBackground;
 Material mFloor;
 Material mLine;
 Material mFilterMaterial;
+Material mDisplacement;
 
 bool mEditMode = true;
 bool mWireframe = false;
@@ -110,7 +112,7 @@ Plane* mBackgroundPlane;
 Plane* mFloorPlane;
 Plane* mShadowPlane;
 Plane* mShadowPlane2;
-
+Plane* mDisplacementPlane;
 unsigned int mRockVao;
 unsigned int mRockVbo;
 
@@ -129,6 +131,7 @@ float mHeight;
 float mHeightScale;
 int mSteps;
 int mRefinementSteps;
+int mSubdivide;
 
 float mVerticesRock[6][2] = {{-1.0f, -1.0f}, {-1.0, 1.0}, {1.0, -1.0}, {1.0f, 1.0f}, {-1.0, 1.0}, {1.0, -1.0}};
 glm::vec3 mLightPos;

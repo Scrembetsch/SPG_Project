@@ -43,6 +43,7 @@ void SetupMembers()
     mRefinementSteps = 10.0f;
     mLastFrameTime = 0;
     mFirstMouse = true;
+    mSubdivide = 1.0;
 
     mParticleSystem.SetGeneratorProperties(
         glm::vec3(0.0f, 0.0f, 60.0f), // Where the particles are generated
@@ -126,6 +127,10 @@ void SetupMaterials()
     mFloor.UseShader(new Shader());
     mFloor.GetShader()->load("shader/default.vs", "shader/default.fs");
     mFloor.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/floor.png").string().c_str()), GL_TEXTURE0));
+
+    mDisplacement.UseShader(new Shader());
+    mDisplacement.GetShader()->load("shader/Displacement/disp.vs", "shader/Displacement/disp.fs", /*"shader/Displacement/disp.gs"*/ nullptr, "shader/Displacement/disp.tcs", "shader/Displacement/disp.tes");
+    mDisplacement.mTextures.push_back(new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/floor.png").string().c_str()), GL_TEXTURE0));
 
     mParticleSystem.InitParticleSystem("shader/Particle/update.vs", "shader/Particle/update.gs", "shader/Particle/render.vs", "shader/Particle/render.gs", "shader/Particle/render.fs");
     mParticleSystem.mTexture = new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/particle.png").string().c_str()), GL_TEXTURE0);
@@ -248,6 +253,13 @@ void SetupArraysAndBuffers()
     modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 4.0f));
     mShadowPlane2->mModelMatrix = modelMatrix;
+
+    mDisplacementPlane = new Plane();
+    modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f, 3.0f, 3.0f));
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(3.0f, 5.0f, 3.0f));
+    mDisplacementPlane->mModelMatrix = modelMatrix;
 
     mFilterPlane = new Plane();
 }
@@ -391,6 +403,7 @@ void DrawText()
     text += "Steps: \t  \t  \t  \t" + std::to_string(mSteps) + "\n";
     text += "Refine Steps:  \t  \t" + std::to_string(mRefinementSteps) + "\n";
     text += "Particle Spawn Time:" + std::to_string(mParticleSystem.mNextGenerationTime) + "\n";
+    text += "Tess Subdivide:\t  \t" + std::to_string(mSubdivide) + "\n";
     mTextRenderer.RenderFormattedText(text, 5.0f, SCR_HEIGHT - 20.0f, 0.4f, glm::vec3(1.0f, 1.0f, 1.0f), 0.1f);
 
     if (mFrameTime >= 0.5)
@@ -425,6 +438,7 @@ void RenderScene()
 
     RenderGeneratedGeometry(projection, view, lightSpaceMatrix);
     RenderParallaxObjects(projection, view, lightSpaceMatrix);
+    RenderDisplacementObjects(projection, view, lightSpaceMatrix);
     RenderBackground(projection, view, lightSpaceMatrix);
     RenderParticleSystem(projection, view, lightSpaceMatrix);
 }
@@ -470,6 +484,16 @@ void RenderParallaxObjects(const glm::mat4& projection, const glm::mat4& view, c
     mParallaxPlane->Draw();
 }
 
+void RenderDisplacementObjects(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace)
+{
+    mDisplacement.use();
+    mDisplacement.GetShader()->setMat4("uProjection", projection);
+    mDisplacement.GetShader()->setMat4("uView", view);
+    mDisplacement.GetShader()->setFloat("uSubdivide", float(mSubdivide));
+    mDisplacement.GetShader()->setMat4("uModel", mDisplacementPlane->mModelMatrix);
+    mDisplacementPlane->Draw(true);
+}
+
 void RenderBackground(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace)
 {
     mBackground.use();
@@ -486,13 +510,13 @@ void RenderBackground(const glm::mat4& projection, const glm::mat4& view, const 
 
     mFloor.use();
     mDepthMap->use();
-    mFloor.GetShader()->setVec4("uColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     mFloor.GetShader()->setMat4("uLightSpaceMatrix", lightSpace);
     mFloor.GetShader()->setVec3("uLightPos", mLightPos);
     mFloor.GetShader()->setVec3("uViewPos", mCamera.Position);
     mFloor.GetShader()->setFloat("uShadowPass", mShadowPass);
     mFloor.GetShader()->setMat4("uProjection", projection);
     mFloor.GetShader()->setMat4("uView", view);
+    mFloor.GetShader()->setVec4("uColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     mFloor.GetShader()->setMat4("uModel", mFloorPlane->mModelMatrix);
     mFloorPlane->Draw();
 
@@ -500,7 +524,7 @@ void RenderBackground(const glm::mat4& projection, const glm::mat4& view, const 
     mFloor.GetShader()->setMat4("uModel", mShadowPlane->mModelMatrix);
     mShadowPlane->Draw();
 
-    mFloor.GetShader()->setVec4("uColor", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    mFloor.GetShader()->setVec4("uColor", glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
     mFloor.GetShader()->setMat4("uModel", mShadowPlane2->mModelMatrix);
     mShadowPlane2->Draw();
 }
@@ -633,13 +657,12 @@ void ProcessInput(GLFWwindow* window)
         }
     }
 
-
     if (mKeyHandler.WasKeyReleased(GLFW_KEY_H))
     {
         mWireframe = !mWireframe;
     }
 
-    if (mKeyHandler.WasKeyReleased(GLFW_KEY_J))
+    if (mKeyHandler.WasKeyReleased(GLFW_KEY_I))
     {
         std::cout << mCamera.Position.x << "f, " << mCamera.Position.y << "f, " <<mCamera.Position.z << "f" << std::endl;
         std::cout << mCamera.Rotation.w << "f, " << mCamera.Rotation.x << "f, " << mCamera.Rotation.y << "f, " << mCamera.Rotation.z << "f" << std::endl;
@@ -665,6 +688,15 @@ void ProcessInput(GLFWwindow* window)
     if (mKeyHandler.IsKeyDown(GLFW_KEY_G))
     {
         mParticleSystem.mNextGenerationTime = std::max(mParticleSystem.mNextGenerationTime - delta, 0.01f);
+    }
+
+    if (mKeyHandler.WasKeyReleased(GLFW_KEY_U))
+    {
+        mSubdivide += 1;
+    }
+    if (mKeyHandler.WasKeyReleased(GLFW_KEY_J))
+    {
+        mSubdivide = std::max(1, mSubdivide - 1);
     }
 
     // Dolly Controller

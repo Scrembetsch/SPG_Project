@@ -20,12 +20,14 @@ public:
     }
 
     // Load Shader and compile
-    bool load(const char* vertexPath = nullptr, const char* fragmentPath = nullptr, const char* geometryPath = nullptr, bool link = true)
+    bool load(const char* vertexPath = nullptr, const char* fragmentPath = nullptr, const char* geometryPath = nullptr, const char* tessControlPath = nullptr, const char* tessEvalPath = nullptr, bool link = true)
     {
         // 1. retrieve the vertex/fragment source code from filePath
         std::string vertexCode;
         std::string fragmentCode;
         std::string geometryCode;
+        std::string tessControlCode;
+        std::string tessEvalCode;
 
         try
         {
@@ -46,6 +48,20 @@ public:
                 geometryCode = openAndReadFile(geometryPath);
                 findAndIncludeFiles(geometryCode);
             }
+
+
+            if (tessControlPath != nullptr)
+            {
+                tessControlCode = openAndReadFile(tessControlPath);
+                findAndIncludeFiles(tessControlCode);
+            }
+
+            if (tessEvalPath != nullptr)
+            {
+                tessEvalCode = openAndReadFile(tessEvalPath);
+                findAndIncludeFiles(tessEvalCode);
+            }
+
         }
         catch (std::ifstream::failure& e)
         {
@@ -82,6 +98,24 @@ public:
             glCompileShader(geometry);
             checkCompileErrors(geometry, "GEOMETRY");
         }
+        unsigned int tessControl;
+        if (tessControlPath != nullptr)
+        {
+            const char* tcShaderCode = tessControlCode.c_str();
+            tessControl = glCreateShader(GL_TESS_CONTROL_SHADER);
+            glShaderSource(tessControl, 1, &tcShaderCode, NULL);
+            glCompileShader(tessControl);
+            checkCompileErrors(tessControl, "TESS_CONTROL");
+        }
+        unsigned int tessEval;
+        if (tessEvalPath != nullptr)
+        {
+            const char* teShaderCode = tessEvalCode.c_str();
+            tessEval = glCreateShader(GL_TESS_EVALUATION_SHADER);
+            glShaderSource(tessEval, 1, &teShaderCode, NULL);
+            glCompileShader(tessEval);
+            checkCompileErrors(tessEval, "TESS_EVAL");
+        }
         // shader Program
         ID = glCreateProgram();
         if(vertexPath != nullptr)
@@ -90,6 +124,10 @@ public:
             glAttachShader(ID, fragment);
         if (geometryPath != nullptr)
             glAttachShader(ID, geometry);
+        if (tessControlPath != nullptr)
+            glAttachShader(ID, tessControl);
+        if (tessEvalPath != nullptr)
+            glAttachShader(ID, tessEval);
 
         if (link)
         {
@@ -105,6 +143,12 @@ public:
 
         if (geometryPath != nullptr)
             glDeleteShader(geometry);
+
+        if (tessControlPath != nullptr)
+            glDeleteShader(tessControl);
+
+        if (tessEvalPath != nullptr)
+            glDeleteShader(tessEval);
 
         return true;
     }

@@ -31,7 +31,7 @@ public:
 		}
 	}
 
-	void Draw()
+	void Draw(bool patchMode = false)
 	{
 	}
 
