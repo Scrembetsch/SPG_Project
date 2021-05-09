@@ -174,7 +174,6 @@ void ParticleSystem::RenderParticles()
 	glDisableVertexAttribArray(1);
 
 	glDrawArrays(GL_POINTS, 0, mNumParticles);
-
 	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
 }
@@ -219,5 +218,5 @@ void ParticleSystem::SetMatrices(const glm::mat4& projection, const glm::mat4& v
 
 void ParticleSystem::CheckInit() const
 {
-	assert(mInitalized && "Particle system not initalized before use");
+	assert(mInitalized && "Particle system not initialized before use");
 }

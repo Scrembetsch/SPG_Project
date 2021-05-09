@@ -28,11 +28,11 @@ int main(int argc, char** argv)
 
 void SetupMembers()
 {
-    mCamera.Position = glm::vec3(-21.7381f, 16.0659f, -32.0739f);
-    //mCamera.Yaw = 90.0f;
-    //mCamera.Pitch = 0.0f;
-    //mCamera.updateCameraVectors();
-    mLightPos = glm::vec3(-2.0f, 4.0f, -1.0f);
+    mCamera.Position = glm::vec3(-2.57005f, 16.0659f, -31.8907f);
+    mCamera.Yaw = 90.0f;
+    mCamera.Pitch = -18.0f;
+    mCamera.updateCameraVectors();
+    mLightPos = glm::vec3(0.0f, 32.0f, -40.0f);
     mLightDir = glm::vec3(0.0f, 0.0f, 0.0f) - mLightPos;
     mShowFPS = 0;
     mFrameCount = 0;
@@ -40,12 +40,12 @@ void SetupMembers()
     mHeight = 0;
     mHeightScale = 0.25f;
     mSteps = 10.0f;
-    mRefinmentSteps = 10.0f;
+    mRefinementSteps = 10.0f;
     mLastFrameTime = 0;
     mFirstMouse = true;
 
     mParticleSystem.SetGeneratorProperties(
-        glm::vec3(-2.0f, 0.0f, 2.0f), // Where the particles are generated
+        glm::vec3(0.0f, 0.0f, 60.0f), // Where the particles are generated
         glm::vec3(-20, 30, -5), // Minimal velocity
         glm::vec3(20, 100, 5), // Maximal velocity
         glm::vec3(0, -20, 0), // Gravity force applied to particles
@@ -129,6 +129,11 @@ void SetupMaterials()
 
     mParticleSystem.InitParticleSystem("shader/Particle/update.vs", "shader/Particle/update.gs", "shader/Particle/render.vs", "shader/Particle/render.gs", "shader/Particle/render.fs");
     mParticleSystem.mTexture = new Texture2D(Util::LoadTexture(std::filesystem::absolute("data/texture/particle.png").string().c_str()), GL_TEXTURE0);
+
+    mFilterMaterial.UseShader(new Shader());
+    mFilterMaterial.GetShader()->load("shader/VSM/blur.vs", "shader/VSM/blur.fs");
+    mFilterMaterial.mTextures.push_back(mDepthMap);
+    mFilterMaterial.mTextures.push_back(mDepthMapTemp);
 }
 
 bool SetupTextRenderer()
@@ -172,30 +177,47 @@ void SetupArraysAndBuffers()
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
     glBindVertexArray(0);
 
-    // Confgiure depth map FBO
-    glGenFramebuffers(1, &mDepthMapFbo);
-    // Create depth texture
-    glGenTextures(1, &mDepthMap);
-    glBindTexture(GL_TEXTURE_2D, mDepthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // Shadow Map
+    mDepthMap = new Texture2D(0, GL_TEXTURE1);
+    glGenTextures(1, &mDepthMap->mTex);
+    mDepthMap->mShared = true;
+    glBindTexture(GL_TEXTURE_2D, mDepthMap->mTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     float borderColor[] = {1.0, 1.0, 1.0, 1.0};
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-    // Attach depth map as FBOs depth buffer
+
+    mDepthMapTemp = new Texture2D(0, GL_TEXTURE0);
+    glGenTextures(1, &mDepthMapTemp->mTex);
+    mDepthMapTemp->mShared = true;
+    glBindTexture(GL_TEXTURE_2D, mDepthMapTemp->mTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+    glGenFramebuffers(1, &mDepthMapFbo);
     glBindFramebuffer(GL_FRAMEBUFFER, mDepthMapFbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mDepthMap, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mDepthMapTemp->mTex, 0);
+
+    glGenFramebuffers(1, &mDepthMapFilterFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, mDepthMapFilterFbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mDepthMap->mTex, 0);
+
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    // Planes
     mParallaxPlane = new Plane();
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f, 3.0f, 3.0f));
-    modelMatrix = glm::rotate(modelMatrix, glm::radians(135.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(-2.0f, 0.0f, 5.0f));
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(3.0f, 2.0f, 3.0f));
     mParallaxPlane->mModelMatrix = modelMatrix;
 
     mBackgroundPlane = new Plane();
@@ -217,15 +239,17 @@ void SetupArraysAndBuffers()
     modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 3.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(-5.0f, 8.0f, 10.0f));
     mShadowPlane->mModelMatrix = modelMatrix;
 
     mShadowPlane2 = new Plane();
     modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 1.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 4.0f));
     mShadowPlane2->mModelMatrix = modelMatrix;
+
+    mFilterPlane = new Plane();
 }
 
 void RenderLoop()
@@ -285,8 +309,10 @@ void HandleInput()
 
 void UpdateScene()
 {
-    //UpdateGeneratedGeometry();
-    //UpdateParticleSystem();
+    UpdateGeneratedGeometry();
+    UpdateParticleSystem();
+
+    mShadowPlane2->mModelMatrix = glm::rotate(mShadowPlane2->mModelMatrix, glm::radians(float(mDeltaTime) * 20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 }
 
 void UpdateGeneratedGeometry()
@@ -323,7 +349,19 @@ void RenderShadowPass()
     glBindFramebuffer(GL_FRAMEBUFFER, mDepthMapFbo);
 
     glClear(GL_DEPTH_BUFFER_BIT);
+
     RenderScene();
+    FilterShadowPass();
+}
+
+void FilterShadowPass()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, mDepthMapFilterFbo);
+    glClear(GL_COLOR_BUFFER_BIT);
+    mFilterMaterial.use();
+    mFilterMaterial.GetShader()->setFloat("uBlurAmount", 4);
+    mDepthMapTemp->use();
+    mFilterPlane->Draw();
 }
 
 void RenderDefaultPass()
@@ -351,7 +389,7 @@ void DrawText()
     text += "Current Height:\t  \t" + std::to_string(mCamera.Position.y) + "\n";
     text += "Parallax Scale:\t  \t" + std::to_string(mHeightScale) + "\n";
     text += "Steps: \t  \t  \t  \t" + std::to_string(mSteps) + "\n";
-    text += "Refine Steps:  \t  \t" + std::to_string(mRefinmentSteps) + "\n";
+    text += "Refine Steps:  \t  \t" + std::to_string(mRefinementSteps) + "\n";
     text += "Particle Spawn Time:" + std::to_string(mParticleSystem.mNextGenerationTime) + "\n";
     mTextRenderer.RenderFormattedText(text, 5.0f, SCR_HEIGHT - 20.0f, 0.4f, glm::vec3(1.0f, 1.0f, 1.0f), 0.1f);
 
@@ -385,10 +423,10 @@ void RenderScene()
     lightView = glm::lookAt(mLightPos, mLightDir + mLightPos, glm::vec3(0.0, 1.0, 0.0));
     lightSpaceMatrix = lightProjection * lightView;
 
-    //RenderGeneratedGeometry(projection, view, lightSpaceMatrix);
-    //RenderParallaxObjects(projection, view, lightSpaceMatrix);
+    RenderGeneratedGeometry(projection, view, lightSpaceMatrix);
+    RenderParallaxObjects(projection, view, lightSpaceMatrix);
     RenderBackground(projection, view, lightSpaceMatrix);
-    //RenderParticleSystem(projection, view, lightSpaceMatrix);
+    RenderParticleSystem(projection, view, lightSpaceMatrix);
 }
 
 void RenderGeneratedGeometry(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace)
@@ -417,6 +455,10 @@ void RenderGeneratedGeometry(const glm::mat4& projection, const glm::mat4& view,
 void RenderParallaxObjects(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace)
 {
     mParallax.use();
+    mDepthMap->use(GL_TEXTURE3);
+    mParallax.GetShader()->setVec4("uColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    mParallax.GetShader()->setMat4("uLightSpaceMatrix", lightSpace);
+    mParallax.GetShader()->setFloat("uShadowPass", mShadowPass);
     mParallax.GetShader()->setMat4("uProjection", projection);
     mParallax.GetShader()->setMat4("uView", view);
     mParallax.GetShader()->setMat4("uModel", mParallaxPlane->mModelMatrix);
@@ -424,17 +466,14 @@ void RenderParallaxObjects(const glm::mat4& projection, const glm::mat4& view, c
     mParallax.GetShader()->setVec3("uLightPos", mLightPos);
     mParallax.GetShader()->setFloat("uHeightScale", mHeightScale);
     mParallax.GetShader()->setFloat("uSteps", float(mSteps));
-    mParallax.GetShader()->setFloat("uRefinmentSteps", float(mRefinmentSteps));
+    mParallax.GetShader()->setFloat("uRefinementSteps", float(mRefinementSteps));
     mParallaxPlane->Draw();
 }
 
 void RenderBackground(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace)
 {
-    glEnable(GL_BLEND);
-
     mBackground.use();
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, mDepthMap);
+    mDepthMap->use();
     mBackground.GetShader()->setVec4("uColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     mBackground.GetShader()->setMat4("uLightSpaceMatrix", lightSpace);
     mBackground.GetShader()->setVec3("uLightPos", mLightPos);
@@ -446,8 +485,7 @@ void RenderBackground(const glm::mat4& projection, const glm::mat4& view, const 
     mBackgroundPlane->Draw();
 
     mFloor.use();
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, mDepthMap);
+    mDepthMap->use();
     mFloor.GetShader()->setVec4("uColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     mFloor.GetShader()->setMat4("uLightSpaceMatrix", lightSpace);
     mFloor.GetShader()->setVec3("uLightPos", mLightPos);
@@ -465,8 +503,6 @@ void RenderBackground(const glm::mat4& projection, const glm::mat4& view, const 
     mFloor.GetShader()->setVec4("uColor", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     mFloor.GetShader()->setMat4("uModel", mShadowPlane2->mModelMatrix);
     mShadowPlane2->Draw();
-
-    glDisable(GL_BLEND);
 }
 
 void RenderParticleSystem(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace)
@@ -570,11 +606,11 @@ void ProcessInput(GLFWwindow* window)
         }
         if (mKeyHandler.IsKeyDown(GLFW_KEY_UP))
         {
-            mRefinmentSteps = std::min(32, mRefinmentSteps + 1);
+            mRefinementSteps = std::min(32, mRefinementSteps + 1);
         }
         if (mKeyHandler.IsKeyDown(GLFW_KEY_DOWN))
         {
-            mRefinmentSteps = std::max(1, mRefinmentSteps - 1);
+            mRefinementSteps = std::max(1, mRefinementSteps - 1);
         }
     }
     else
@@ -589,11 +625,11 @@ void ProcessInput(GLFWwindow* window)
         }
         if (mKeyHandler.WasKeyPressed(GLFW_KEY_UP))
         {
-            mRefinmentSteps = std::min(32, mRefinmentSteps + 1);
+            mRefinementSteps = std::min(32, mRefinementSteps + 1);
         }
         if (mKeyHandler.WasKeyPressed(GLFW_KEY_DOWN))
         {
-            mRefinmentSteps = std::max(1, mRefinmentSteps - 1);
+            mRefinementSteps = std::max(1, mRefinementSteps - 1);
         }
     }
 

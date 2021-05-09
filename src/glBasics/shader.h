@@ -26,40 +26,25 @@ public:
         std::string vertexCode;
         std::string fragmentCode;
         std::string geometryCode;
-        std::ifstream vShaderFile;
-        std::ifstream fShaderFile;
-        std::ifstream gShaderFile;
-        // ensure ifstream objects can throw exceptions:
-        vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-        fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-        gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
         try
         {
             if (vertexPath != nullptr)
             {
-                vShaderFile.open(vertexPath);
-                std::stringstream vShaderStream;
-                vShaderStream << vShaderFile.rdbuf();
-                vShaderFile.close();
-                vertexCode = vShaderStream.str();
+                vertexCode = openAndReadFile(vertexPath);
+                findAndIncludeFiles(vertexCode);
             }
 
             if (fragmentPath != nullptr)
             {
-                fShaderFile.open(fragmentPath);
-                std::stringstream fShaderStream;
-                fShaderStream << fShaderFile.rdbuf();
-                fShaderFile.close();
-                fragmentCode = fShaderStream.str();
+                fragmentCode = openAndReadFile(fragmentPath);
+                findAndIncludeFiles(fragmentCode);
             }
 
             if (geometryPath != nullptr)
             {
-                gShaderFile.open(geometryPath);
-                std::stringstream gShaderStream;
-                gShaderStream << gShaderFile.rdbuf();
-                gShaderFile.close();
-                geometryCode = gShaderStream.str();
+                geometryCode = openAndReadFile(geometryPath);
+                findAndIncludeFiles(geometryCode);
             }
         }
         catch (std::ifstream::failure& e)
@@ -222,10 +207,52 @@ private:
         }
     }
 
+    std::string openAndReadFile(const char* path) const
+    {
+        std::string code;
+        std::ifstream file;
+
+        file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+        try
+        {
+            if (path != nullptr)
+            {
+                file.open(path);
+                std::stringstream stream;
+                stream << file.rdbuf();
+                file.close();
+                code = stream.str();
+                return code;
+            }
+        }
+        catch (std::ifstream::failure& e)
+        {
+            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << e.what() << std::endl;
+        }
+        return "";
+    }
+
+    void findAndIncludeFiles(std::string& code) const
+    {
+        size_t pos = 0;
+        while ((pos = code.find("INCLUDE")) != std::string::npos)
+        {
+            size_t fileBegin = code.find("\"", pos);
+            size_t fileEnd = code.find("\"", fileBegin + 1);
+
+            std::string fileName = code.substr(fileBegin + 1, fileEnd - fileBegin - 1);
+
+            std::string includeCode = openAndReadFile(fileName.c_str());
+
+            code.replace(code.begin() + pos, code.begin() + fileEnd + 1, includeCode);
+        }
+    }
+
     GLint GetLocation(const std::string& name) const
     {
         GLint location = glGetUniformLocation(ID, name.c_str());
-        assert(location != -1);
+        //assert(location != -1);
         return location;
     }
 };

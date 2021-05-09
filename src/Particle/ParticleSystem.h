@@ -24,7 +24,11 @@ public:
 	void SetMatrices(const glm::mat4& projection, const glm::mat4& viewMat, const glm::vec3& view, const glm::vec3& upVector);
 
 	Texture2D* mTexture;
+
 	float mNextGenerationTime;
+
+	Shader mRenderShader;
+	Shader mUpdateShader;
 private:
 	void CheckInit() const;
 
@@ -34,7 +38,7 @@ private:
 	bool mInitalized;
 
 	unsigned int mTransformFeedbackBuffer;
-	
+
 	unsigned int mVbos[sBufferSize];
 	unsigned int mVaos[sBufferSize];
 
@@ -62,6 +66,5 @@ private:
 
 	int mNumToGenerate;
 
-	Shader mRenderShader;
-	Shader mUpdateShader;
+
 };

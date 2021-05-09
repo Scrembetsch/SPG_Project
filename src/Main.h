@@ -40,6 +40,7 @@ void HandleEndFrameLogic();
 
 void UpdateScene();
 void RenderShadowPass();
+void FilterShadowPass();
 void RenderDefaultPass();
 void DrawText();
 
@@ -97,6 +98,7 @@ Material mParallax;
 Material mBackground;
 Material mFloor;
 Material mLine;
+Material mFilterMaterial;
 
 bool mEditMode = true;
 bool mWireframe = false;
@@ -116,14 +118,17 @@ unsigned int mEmptyVao;
 unsigned int mEmptyVbo;
 
 unsigned int mDepthMapFbo;
-unsigned int mDepthMap;
+unsigned int mDepthMapFilterFbo;
+Plane* mFilterPlane;
+Texture2D* mDepthMapTemp;
+Texture2D* mDepthMap;
 
 float mShadowPass;
 
 float mHeight;
 float mHeightScale;
 int mSteps;
-int mRefinmentSteps;
+int mRefinementSteps;
 
 float mVerticesRock[6][2] = {{-1.0f, -1.0f}, {-1.0, 1.0}, {1.0, -1.0}, {1.0f, 1.0f}, {-1.0, 1.0}, {1.0, -1.0}};
 glm::vec3 mLightPos;

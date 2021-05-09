@@ -1,5 +1,8 @@
 #version 430
 
+INCLUDE "shader/include/ShadowPass.vsh"
+INCLUDE "shader/include/Mapping/Parallax.vsh"
+
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
@@ -9,10 +12,7 @@ layout (location = 4) in vec3 aBitangent;
 out VS_OUT {
     vec3 FragPos;
     vec2 TexCoords;
-    vec3 TangentLightPos;
-    vec3 TangentViewPos;
-    vec3 TangentFragPos;
-} vs_out;
+} VsOut;
 
 uniform mat4 uProjection;
 uniform mat4 uView;
@@ -23,17 +23,15 @@ uniform vec3 uViewPos;
 
 void main()
 {
-    vs_out.FragPos = vec3(uModel * vec4(aPos, 1.0));   
-    vs_out.TexCoords = aTexCoords;   
-    
-    vec3 T = normalize(mat3(uModel) * aTangent);
-    vec3 B = normalize(mat3(uModel) * aBitangent);
-    vec3 N = normalize(mat3(uModel) * aNormal);
-    mat3 TBN = transpose(mat3(T, B, N));
+    if(HandleShadowPass(uModel, aPos) == 1.0)
+    {
+        return;
+    }
 
-    vs_out.TangentLightPos = TBN * uLightPos;
-    vs_out.TangentViewPos  = TBN * uViewPos;
-    vs_out.TangentFragPos  = TBN * vs_out.FragPos;
+    VsOut.FragPos = vec3(uModel * vec4(aPos, 1.0));   
+    VsOut.TexCoords = aTexCoords;   
     
+    CalculateTangentSpace(mat3(uModel), aTangent, aBitangent, aNormal, uLightPos, uViewPos, VsOut.FragPos);
+
     gl_Position = uProjection * uView * uModel * vec4(aPos, 1.0);
 }

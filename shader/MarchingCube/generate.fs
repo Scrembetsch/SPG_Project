@@ -27,7 +27,8 @@ vec2 RotatePosition(vec2 position, float angle)
     return rot * position;
 }
 
-void main(void) {
+void main(void)
+{
     vec2 rotPos1 = RotatePosition(vPosition.xz, vPosition.y);
     vec2 rotPos2 = RotatePosition(vPosition.xz, -vPosition.y * 5);
 

@@ -13,7 +13,7 @@ public:
 	Mesh()
 		: mVao(0)
 		, mVbo(0)
-		, mModelMatrix()
+		, mModelMatrix(1.0f)
 	{
 	}
 
