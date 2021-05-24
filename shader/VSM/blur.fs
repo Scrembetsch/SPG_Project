@@ -18,7 +18,7 @@ void main(void)
             float depth = texture(uFilterMap, vTexCoord + offset).r;
 
             float dx = dFdx(depth);
-            float dy = dFdx(depth);
+            float dy = dFdy(depth);
             float e2 = depth * depth + 0.25 * (dx * dx + dy * dy);
 
             sum += vec2(depth, e2);

@@ -222,7 +222,7 @@ void SetupArraysAndBuffers()
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f, 3.0f, 3.0f));
     modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(3.0f, 2.0f, 3.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(3.0f, 3.0f, -6.0f));
     mParallaxPlane->mModelMatrix = modelMatrix;
 
     mBackgroundPlane = new Plane();
@@ -244,15 +244,22 @@ void SetupArraysAndBuffers()
     modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(-5.0f, 8.0f, 10.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(-5.0f, 3.0f, 10.0f));
     mShadowPlane->mModelMatrix = modelMatrix;
 
     mShadowPlane2 = new Plane();
     modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 4.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 5.0f));
     mShadowPlane2->mModelMatrix = modelMatrix;
+
+    mShadowPlane3 = new Plane();
+    modelMatrix = glm::mat4(1.0f);
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 2.0f, 5.0f));
+    mShadowPlane3->mModelMatrix = modelMatrix;
 
     mDisplacementPlane = new Plane();
     modelMatrix = glm::mat4(1.0f);
@@ -324,7 +331,9 @@ void UpdateScene()
     UpdateGeneratedGeometry();
     UpdateParticleSystem();
 
-    mShadowPlane2->mModelMatrix = glm::rotate(mShadowPlane2->mModelMatrix, glm::radians(float(mDeltaTime) * 20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    mShadowPlane->mModelMatrix = glm::rotate(mShadowPlane->mModelMatrix, glm::radians(float(mDeltaTime) * 50.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    mShadowPlane2->mModelMatrix = glm::rotate(mShadowPlane2->mModelMatrix, glm::radians(float(mDeltaTime) * 50.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    mShadowPlane3->mModelMatrix = glm::rotate(mShadowPlane3->mModelMatrix, glm::radians(float(mDeltaTime) * 50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 void UpdateGeneratedGeometry()
@@ -491,7 +500,7 @@ void RenderDisplacementObjects(const glm::mat4& projection, const glm::mat4& vie
     mDisplacement.GetShader()->setMat4("uView", view);
     mDisplacement.GetShader()->setFloat("uSubdivide", float(mSubdivide));
     mDisplacement.GetShader()->setMat4("uModel", mDisplacementPlane->mModelMatrix);
-    mDisplacementPlane->Draw(true);
+    //mDisplacementPlane->Draw(true);
 }
 
 void RenderBackground(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace)
@@ -527,6 +536,10 @@ void RenderBackground(const glm::mat4& projection, const glm::mat4& view, const 
     mFloor.GetShader()->setVec4("uColor", glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
     mFloor.GetShader()->setMat4("uModel", mShadowPlane2->mModelMatrix);
     mShadowPlane2->Draw();
+
+    mFloor.GetShader()->setVec4("uColor", glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+    mFloor.GetShader()->setMat4("uModel", mShadowPlane3->mModelMatrix);
+    mShadowPlane3->Draw();
 }
 
 void RenderParticleSystem(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace)

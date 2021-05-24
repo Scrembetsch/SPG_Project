@@ -112,6 +112,7 @@ Plane* mBackgroundPlane;
 Plane* mFloorPlane;
 Plane* mShadowPlane;
 Plane* mShadowPlane2;
+Plane* mShadowPlane3;
 Plane* mDisplacementPlane;
 unsigned int mRockVao;
 unsigned int mRockVbo;

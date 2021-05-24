@@ -72,46 +72,8 @@ float GetPcfShadow(sampler2D shadowMap, vec4 fragPosLightSpace, vec3 fragNormal,
     return shadow;
 }
 
-float chebyshevUpperBound(vec2 moments, float t, float minVariance) {   
-    float variance = moments.y - (moments.x * moments.x);   
-    variance = max(variance, minVariance);    
-    float d = t - moments.x;   
-    float pMax = variance / (variance + d * d);   
-    return max(pMax, float(t < moments.x)); 
-} 
-
-float reduceLightBleeding(float light, float Amount) {     
-    return LinearStep(Amount, 1.0, light); 
-} 
-
 float GetVsmShadow(sampler2D shadowMap, vec4 fragPosLightSpace, float minVariance, float lightBleedOffset)
 {
-    // vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // projCoords = projCoords * 0.5 + 0.5;
-
-    // vec2 moments = texture(shadowMap, projCoords.xy).rg;
-
-    // return 1 - reduceLightBleeding(chebyshevUpperBound(moments, projCoords.z, minVariance), lightBleedOffset);
-
-    // vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // projCoords = projCoords * 0.5 + 0.5;
-
-    // float d = projCoords.z;
-
-    // vec2 e = texture(shadowMap, projCoords.xy).rg;
-
-    // float sigma = max(e.y - e.x * e.x, minVariance);
-    // float mu = e.x;
-
-    // // float d = currentDepth - e.x;
-    // // float pMax = LinearStep(lightBleedOffset, 1.0, variance / (variance + d * d));
-
-    // float dif = (d - mu) * 50; // Somehow needs to be multiplied (if not multiplied shadow is way to soft)
-    // float shadow = 1 - max(sigma / (sigma + dif * dif), d < mu ? 1.0 : 0.0);
-    // // shadow = (sigma / (sigma + dif * dif));
-    // // shadow = LinearStep(0.0, 1.0, d - mu);
-    // return shadow;
-
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
 
@@ -120,7 +82,7 @@ float GetVsmShadow(sampler2D shadowMap, vec4 fragPosLightSpace, float minVarianc
 	float variance = max(moments.y - moments.x * moments.x, minVariance);
 	
 	float d = (projCoords.z - moments.x) * 10;
-	float pMax = LinearStep(lightBleedOffset, 1.0, variance / (variance + d*d));
+	float pMax = LinearStep(lightBleedOffset, 1.0, variance / (variance + d * d));
     
 	return 1 - min(max(p, pMax), 1.0);
 }
