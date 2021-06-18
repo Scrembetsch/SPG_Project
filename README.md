@@ -30,16 +30,17 @@ Open Solution and adjust **Additional Include & Linker Directories**
 ## Controls
 
 ### General
-|    Key    | Function      |
-| :-------: | ------------- |
-|    ESC    | Close Window  |
-|     W     | Move forward  |
-|     A     | Move left     |
-|     S     | Move backward |
-|     D     | Move right    |
-|   SPACE   | Move up       |
-| LEFT_CTRL | Move down     |
-|   MOUSE   | Look around   |
+|    Key    | Function                   |
+| :-------: | -------------              |
+|    ESC    | Close Window               |
+|     W     | Move forward               |
+|     A     | Move left                  |
+|     S     | Move backward              |
+|     D     | Move right                 |
+|   SPACE   | Move up                    |
+| LEFT_CTRL | Move down                  |
+|     H     | Turn off/on Wireframe mode |
+|   MOUSE   | Look around                |
 
 ### Parallax Mapping
 |  Key   | Function                  |
@@ -59,6 +60,12 @@ Open Solution and adjust **Additional Include & Linker Directories**
 |   R    | Shot ray cast             |
 |   T    | Increase Update Time      |
 |   G    | Decrease Update Time      |
+
+### Tessellation
+| Key | Function |
+| :--: | -- |
+| U | Increase Tessellation factor |
+| J | Decrease Tessellation factor |
 
 ### Dolly Camera
 |    Key    | Function                                      |
