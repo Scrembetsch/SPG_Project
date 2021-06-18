@@ -498,9 +498,9 @@ void RenderDisplacementObjects(const glm::mat4& projection, const glm::mat4& vie
     mDisplacement.use();
     mDisplacement.GetShader()->setMat4("uProjection", projection);
     mDisplacement.GetShader()->setMat4("uView", view);
-    mDisplacement.GetShader()->setFloat("uSubdivide", float(mSubdivide));
+    mDisplacement.GetShader()->setFloat("uSubdivide", mSubdivide);
     mDisplacement.GetShader()->setMat4("uModel", mDisplacementPlane->mModelMatrix);
-    //mDisplacementPlane->Draw(true);
+    mDisplacementPlane->Draw(true);
 }
 
 void RenderBackground(const glm::mat4& projection, const glm::mat4& view, const glm::mat4& lightSpace)
@@ -705,13 +705,13 @@ void ProcessInput(GLFWwindow* window)
         mParticleSystem.mNextGenerationTime = std::max(mParticleSystem.mNextGenerationTime - delta, 0.01f);
     }
 
-    if (mKeyHandler.WasKeyReleased(GLFW_KEY_U))
+    if (mKeyHandler.IsKeyDown(GLFW_KEY_U))
     {
-        mSubdivide += 1;
+        mSubdivide += 0.1f;
     }
-    if (mKeyHandler.WasKeyReleased(GLFW_KEY_J))
+    if (mKeyHandler.IsKeyDown(GLFW_KEY_J))
     {
-        mSubdivide = std::max(1, mSubdivide - 1);
+        mSubdivide = std::max(1.0f, mSubdivide - 0.1f);
     }
 
     // Dolly Controller

@@ -131,7 +131,7 @@ float mHeight;
 float mHeightScale;
 int mSteps;
 int mRefinementSteps;
-int mSubdivide;
+float mSubdivide;
 
 float mVerticesRock[6][2] = {{-1.0f, -1.0f}, {-1.0, 1.0}, {1.0, -1.0}, {1.0f, 1.0f}, {-1.0, 1.0}, {1.0, -1.0}};
 glm::vec3 mLightPos;
